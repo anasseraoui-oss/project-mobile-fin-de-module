@@ -61,4 +61,33 @@ public class CourseAndSeanceController {
         courseService.updateProgress(seanceId, SecurityUtils.getCurrentUserId(), watchedSeconds);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/seances/{id}/start")
+    @PreAuthorize("hasRole('FORMATEUR')")
+    public ResponseEntity<Void> startSeance(@PathVariable UUID id) {
+        courseService.startSeance(id, SecurityUtils.getCurrentUserId());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/seances/{id}/end")
+    @PreAuthorize("hasRole('FORMATEUR')")
+    public ResponseEntity<Void> endSeance(@PathVariable UUID id) {
+        courseService.endSeance(id, SecurityUtils.getCurrentUserId());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/seances/{id}/video")
+    @PreAuthorize("hasRole('FORMATEUR')")
+    public ResponseEntity<Void> uploadVideo(
+            @PathVariable UUID id,
+            @RequestPart("video") MultipartFile video) {
+        courseService.uploadVideo(id, video, SecurityUtils.getCurrentUserId());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/seances/{id}/pdf-url")
+    @PreAuthorize("hasRole('APPRENANT')")
+    public ResponseEntity<Map<String, String>> getPdfUrl(@PathVariable UUID id) {
+        return ResponseEntity.ok(courseService.getPdfUrl(id, SecurityUtils.getCurrentUserId()));
+    }
 }

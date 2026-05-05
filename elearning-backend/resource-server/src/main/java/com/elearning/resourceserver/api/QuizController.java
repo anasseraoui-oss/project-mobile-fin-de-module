@@ -53,4 +53,11 @@ public class QuizController {
     public ResponseEntity<QuizResponseDto> createQuiz(@RequestBody QuizRequestDto quizDto) {
         return ResponseEntity.ok(quizService.createQuiz(quizDto, SecurityUtils.getCurrentUserId()));
     }
+
+    @PostMapping("/quizzes/{id}/attempts/{apprenantId}/reset")
+    @PreAuthorize("hasRole('FORMATEUR')")
+    public ResponseEntity<Void> resetAttempts(@PathVariable UUID id, @PathVariable UUID apprenantId) {
+        quizService.resetAttempts(id, apprenantId);
+        return ResponseEntity.ok().build();
+    }
 }

@@ -1,12 +1,17 @@
 package com.elearning.resourceserver.domain;
 
+import com.elearning.resourceserver.domain.enums.QuizQuestionType;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+
+import java.util.List;
 import java.util.UUID;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "quiz_questions")
 public class QuizQuestion {
@@ -19,18 +24,17 @@ public class QuizQuestion {
     private Quiz quiz;
 
     @Column(nullable = false, columnDefinition = "TEXT")
-    private String question;
+    private String text;
 
-    private String type; // MCQ, TRUE_FALSE, OPEN
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private QuizQuestionType type;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private String options; // Stored as JSON string or Object mapping
-
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private String correctAnswer;
-
-    private Integer points = 1;
     private Integer orderIndex;
+
+    @Column(nullable = false)
+    private Integer points = 1;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<QuizReponse> reponses;
 }
