@@ -27,13 +27,16 @@ public class RegisteredClientConfig {
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .authorizationGrantType(new AuthorizationGrantType("password"))
+                .redirectUri("com.elearning.app://oauth2redirect")
                 .redirectUri("com.elearning://callback")
+                .postLogoutRedirectUri("com.elearning.app://logout")
                 .postLogoutRedirectUri("com.elearning://logout")
-                
+
                 // OIDC & Custom Scopes
                 .scope(OidcScopes.OPENID)
                 .scope(OidcScopes.PROFILE)
                 .scope(OidcScopes.EMAIL)
+                .scope("offline_access")
                 .scope("courses:read")
                 .scope("courses:write")
                 .scope("quiz:submit")

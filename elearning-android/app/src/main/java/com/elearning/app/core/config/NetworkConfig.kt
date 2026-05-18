@@ -1,9 +1,17 @@
 package com.elearning.app.core.config
 
+import com.elearning.app.BuildConfig
+
+/**
+ * NetworkConfig — single source of truth for backend URLs.
+ *
+ * URLs are injected at compile-time via BuildConfig, which reads from:
+ *   - debug: local.properties (never committed to git)
+ *   - release: hardcoded production URLs in build.gradle.kts
+ *
+ * ⚠️ Never hardcode any IP address here. Use local.properties instead.
+ */
 object NetworkConfig {
-    const val AUTH_SERVER_PORT = 9000
-    const val RESOURCE_SERVER_PORT = 8081
-    const val BASE_HOST = "192.168.1.101"
-    const val AUTH_SERVER_URL = "http://$BASE_HOST:$AUTH_SERVER_PORT/"
-    const val RESOURCE_SERVER_URL = "http://$BASE_HOST:$RESOURCE_SERVER_PORT/"
+    val AUTH_SERVER_URL: String get() = BuildConfig.AUTH_SERVER_URL
+    val RESOURCE_SERVER_URL: String get() = BuildConfig.RESOURCE_SERVER_URL
 }

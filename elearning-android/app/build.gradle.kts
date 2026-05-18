@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,6 +8,12 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
     id("com.google.gms.google-services")
+}
+
+// Load local.properties safely
+val localProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) load(f.inputStream())
 }
 
 android {
@@ -21,8 +29,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "BASE_URL", "\"https://api.elearning.com/\"")
+        // Fallback values (overridden per buildType below)
         buildConfigField("String", "AUTH_SERVER_URL", "\"https://auth.elearning.com/\"")
+        buildConfigField("String", "RESOURCE_SERVER_URL", "\"https://api.elearning.com/\"")
         buildConfigField("String", "GOOGLE_CLIENT_ID", "\"YOUR_GOOGLE_CLIENT_ID\"")
         buildConfigField("String", "FACEBOOK_CLIENT_ID", "\"YOUR_FACEBOOK_CLIENT_ID\"")
     }
@@ -35,10 +44,19 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Production URLs — safe to commit
+            buildConfigField("String", "AUTH_SERVER_URL", "\"https://auth.elearning.com/\"")
+            buildConfigField("String", "RESOURCE_SERVER_URL", "\"https://api.elearning.com/\"")
+            buildConfigField("Boolean", "ENABLE_LOGGING", "false")
         }
         debug {
             isDebuggable = true
             buildConfigField("Boolean", "ENABLE_LOGGING", "true")
+            // Read from local.properties — NEVER hardcode here
+            val authUrl = localProps.getProperty("AUTH_SERVER_URL", "http://10.0.2.2:9000/")
+            val resourceUrl = localProps.getProperty("RESOURCE_SERVER_URL", "http://10.0.2.2:8081/")
+            buildConfigField("String", "AUTH_SERVER_URL", "\"$authUrl\"")
+            buildConfigField("String", "RESOURCE_SERVER_URL", "\"$resourceUrl\"")
         }
     }
 

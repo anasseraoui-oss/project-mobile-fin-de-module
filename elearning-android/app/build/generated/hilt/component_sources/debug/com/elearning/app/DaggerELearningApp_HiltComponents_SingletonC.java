@@ -435,19 +435,25 @@ public final class DaggerELearningApp_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
+      static String com_elearning_app_presentation_quiz_QuizViewModel = "com.elearning.app.presentation.quiz.QuizViewModel";
+
+      static String com_elearning_app_presentation_catalogue_CatalogueViewModel = "com.elearning.app.presentation.catalogue.CatalogueViewModel";
+
       static String com_elearning_app_presentation_formation_FormationDetailViewModel = "com.elearning.app.presentation.formation.FormationDetailViewModel";
 
       static String com_elearning_app_presentation_auth_AuthViewModel = "com.elearning.app.presentation.auth.AuthViewModel";
 
-      static String com_elearning_app_presentation_prof_CreateFormationViewModel = "com.elearning.app.presentation.prof.CreateFormationViewModel";
-
-      static String com_elearning_app_presentation_quiz_QuizViewModel = "com.elearning.app.presentation.quiz.QuizViewModel";
-
       static String com_elearning_app_presentation_scanner_ScannerViewModel = "com.elearning.app.presentation.scanner.ScannerViewModel";
 
-      static String com_elearning_app_presentation_catalogue_CatalogueViewModel = "com.elearning.app.presentation.catalogue.CatalogueViewModel";
+      static String com_elearning_app_presentation_prof_CreateFormationViewModel = "com.elearning.app.presentation.prof.CreateFormationViewModel";
 
       static String com_elearning_app_presentation_player_SeancePlayerViewModel = "com.elearning.app.presentation.player.SeancePlayerViewModel";
+
+      @KeepFieldType
+      QuizViewModel com_elearning_app_presentation_quiz_QuizViewModel2;
+
+      @KeepFieldType
+      CatalogueViewModel com_elearning_app_presentation_catalogue_CatalogueViewModel2;
 
       @KeepFieldType
       FormationDetailViewModel com_elearning_app_presentation_formation_FormationDetailViewModel2;
@@ -456,16 +462,10 @@ public final class DaggerELearningApp_HiltComponents_SingletonC {
       AuthViewModel com_elearning_app_presentation_auth_AuthViewModel2;
 
       @KeepFieldType
-      CreateFormationViewModel com_elearning_app_presentation_prof_CreateFormationViewModel2;
-
-      @KeepFieldType
-      QuizViewModel com_elearning_app_presentation_quiz_QuizViewModel2;
-
-      @KeepFieldType
       ScannerViewModel com_elearning_app_presentation_scanner_ScannerViewModel2;
 
       @KeepFieldType
-      CatalogueViewModel com_elearning_app_presentation_catalogue_CatalogueViewModel2;
+      CreateFormationViewModel com_elearning_app_presentation_prof_CreateFormationViewModel2;
 
       @KeepFieldType
       SeancePlayerViewModel com_elearning_app_presentation_player_SeancePlayerViewModel2;
@@ -557,22 +557,22 @@ public final class DaggerELearningApp_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_elearning_app_presentation_catalogue_CatalogueViewModel = "com.elearning.app.presentation.catalogue.CatalogueViewModel";
+      static String com_elearning_app_presentation_player_SeancePlayerViewModel = "com.elearning.app.presentation.player.SeancePlayerViewModel";
 
       static String com_elearning_app_presentation_scanner_ScannerViewModel = "com.elearning.app.presentation.scanner.ScannerViewModel";
 
       static String com_elearning_app_presentation_prof_CreateFormationViewModel = "com.elearning.app.presentation.prof.CreateFormationViewModel";
 
-      static String com_elearning_app_presentation_auth_AuthViewModel = "com.elearning.app.presentation.auth.AuthViewModel";
-
-      static String com_elearning_app_presentation_player_SeancePlayerViewModel = "com.elearning.app.presentation.player.SeancePlayerViewModel";
+      static String com_elearning_app_presentation_catalogue_CatalogueViewModel = "com.elearning.app.presentation.catalogue.CatalogueViewModel";
 
       static String com_elearning_app_presentation_formation_FormationDetailViewModel = "com.elearning.app.presentation.formation.FormationDetailViewModel";
+
+      static String com_elearning_app_presentation_auth_AuthViewModel = "com.elearning.app.presentation.auth.AuthViewModel";
 
       static String com_elearning_app_presentation_quiz_QuizViewModel = "com.elearning.app.presentation.quiz.QuizViewModel";
 
       @KeepFieldType
-      CatalogueViewModel com_elearning_app_presentation_catalogue_CatalogueViewModel2;
+      SeancePlayerViewModel com_elearning_app_presentation_player_SeancePlayerViewModel2;
 
       @KeepFieldType
       ScannerViewModel com_elearning_app_presentation_scanner_ScannerViewModel2;
@@ -581,13 +581,13 @@ public final class DaggerELearningApp_HiltComponents_SingletonC {
       CreateFormationViewModel com_elearning_app_presentation_prof_CreateFormationViewModel2;
 
       @KeepFieldType
-      AuthViewModel com_elearning_app_presentation_auth_AuthViewModel2;
-
-      @KeepFieldType
-      SeancePlayerViewModel com_elearning_app_presentation_player_SeancePlayerViewModel2;
+      CatalogueViewModel com_elearning_app_presentation_catalogue_CatalogueViewModel2;
 
       @KeepFieldType
       FormationDetailViewModel com_elearning_app_presentation_formation_FormationDetailViewModel2;
+
+      @KeepFieldType
+      AuthViewModel com_elearning_app_presentation_auth_AuthViewModel2;
 
       @KeepFieldType
       QuizViewModel com_elearning_app_presentation_quiz_QuizViewModel2;
