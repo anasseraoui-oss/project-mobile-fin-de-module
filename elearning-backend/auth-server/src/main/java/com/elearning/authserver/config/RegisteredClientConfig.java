@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
-import org.springframework.security.oauth2.core.OAuth2TokenFormat;
+import org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat;
 
 @Configuration
 public class RegisteredClientConfig {
@@ -21,11 +21,12 @@ public class RegisteredClientConfig {
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
         RegisteredClient androidElearningApp = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId("android-elearning-app")
+                .clientId("elearning-mobile-client")
                 // Aucune authentification cliente (pas de client_secret) requis pour les clients publics
                 .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
+                .authorizationGrantType(new AuthorizationGrantType("password"))
                 .redirectUri("com.elearning://callback")
                 .postLogoutRedirectUri("com.elearning://logout")
                 

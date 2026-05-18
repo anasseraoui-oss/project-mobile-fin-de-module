@@ -13,4 +13,13 @@ public class CourseRequestDto {
     
     @NotNull(message = "L'ordre d'affichage est obligatoire")
     private Integer orderIndex;
+
+    private Integer estimatedDuration;
+    
+    // Ajoutés:
+    private Integer presenceThreshold;
+    private Integer quizPassScore;
+    
+    @NotNull(message = "L'ID de la formation est obligatoire")
+    private java.util.UUID formationId;
 }

@@ -16,12 +16,22 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers(
+                    "/api/**",
+                    "/oauth2/token",
+                    "/oauth2/revoke",
+                    "/oauth2/introspect"
+                )
+            )
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS)
+            )
             .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/login", "/error").permitAll()
+                .requestMatchers("/api/auth/register", "/api/auth/**").permitAll()
+                .requestMatchers("/login", "/error", "/actuator/health").permitAll()
                 .anyRequest().authenticated()
             )
-            // L'ajout de oauth2Login permet l'intégration Identity Broker (SSO Fédéré Google/Facebook)
-            .oauth2Login(Customizer.withDefaults())
             // Fallback pour le login standard si l'utilisateur ne choisit pas le SSO fédéré
             .formLogin(Customizer.withDefaults());
 

@@ -5,9 +5,15 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 public class QuizRequestDto {
+    @NotNull(message = "L'ID du cours est obligatoire")
+    private UUID courseId;
+    @NotNull(message = "Le titre du quiz est obligatoire")
+    private String title;
+
     @NotNull(message = "Le score de passage est obligatoire")
     @Positive(message = "Le score doit être positif")
     private Integer passScore;
@@ -18,7 +24,7 @@ public class QuizRequestDto {
     
     @NotNull(message = "La durée (en secondes) est obligatoire")
     @Positive(message = "La durée doit être positive")
-    private Integer timerSeconds;
+    private Integer timeLimit;
     
     @NotEmpty(message = "Un quiz doit contenir au moins une question")
     private List<QuestionDto> questions;

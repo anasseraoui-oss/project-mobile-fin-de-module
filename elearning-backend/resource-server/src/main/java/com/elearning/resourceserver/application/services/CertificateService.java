@@ -31,6 +31,7 @@ import java.util.*;
 public class CertificateService {
 
     private final MinioClient minioClient;
+    private final com.elearning.resourceserver.infrastructure.minio.MinioService minioService;
     private final CertificatRepository certificatRepository;
     private final ProgressionRepository progressionRepository;
     private final CourseRepository courseRepository;
@@ -115,6 +116,15 @@ public class CertificateService {
 
         log.info("Certificate generated for apprenant={} formation={}", apprenantId, formationId);
         return certificat;
+    }
+
+    public String getDownloadUrl(String objectName, int expiryMinutes) {
+        try {
+            return minioService.generatePresignedUrl(MEDIA_BUCKET, objectName, expiryMinutes);
+        } catch (Exception e) {
+            log.error("Failed to generate presigned URL for " + objectName, e);
+            throw new RuntimeException("Erreur de génération du lien");
+        }
     }
 
     private String generatePdf(User user, Formation formation, Organisation org,

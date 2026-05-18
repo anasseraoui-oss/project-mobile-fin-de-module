@@ -23,7 +23,7 @@ public class QuizQuestion {
     @JoinColumn(name = "quiz_id")
     private Quiz quiz;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(name = "question", nullable = false, columnDefinition = "TEXT")
     private String text;
 
     @Enumerated(EnumType.STRING)

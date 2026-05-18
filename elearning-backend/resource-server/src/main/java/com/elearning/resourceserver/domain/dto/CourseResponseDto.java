@@ -14,4 +14,11 @@ public class CourseResponseDto {
     
     private Integer seancesCount;
     private Boolean quizExists;
+    private String status;
+    
+    // Ajoutés:
+    private Integer presenceThreshold;
+    private Boolean isUnlocked;
+    private Double presenceRate;
+    private String quizStatus;
 }

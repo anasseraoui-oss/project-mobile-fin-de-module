@@ -168,6 +168,11 @@ public class CourseAndSeanceService {
         seance.setStatus(SeanceStatus.EN_COURS);
         seanceRepository.save(seance);
     }
+    
+    public void updateProgress(UUID seanceId, UUID userId, Integer watchedSeconds) {
+        // Simple mock method for compilation
+        log.info("Updating progress for seance {}, user {}, seconds {}", seanceId, userId, watchedSeconds);
+    }
 
     /**
      * End a live session (FORMATEUR)
@@ -214,7 +219,7 @@ public class CourseAndSeanceService {
 
         try {
             // Step 5-7: Upload and move
-            String tempKey = minioService.uploadFile(video, "elearning-uploads", "temp/" + seanceId);
+            String tempKey = minioService.uploadFile(video, "elearning-uploads");
             String finalKey = "seances/" + seanceId + "/video" + getExtension(video.getOriginalFilename());
             minioService.moveObject("elearning-uploads", tempKey, "elearning-media", finalKey);
 

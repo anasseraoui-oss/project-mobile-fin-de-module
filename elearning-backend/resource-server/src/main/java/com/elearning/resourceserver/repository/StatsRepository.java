@@ -1,8 +1,10 @@
 package com.elearning.resourceserver.repository;
 
+import com.elearning.resourceserver.domain.Formation;
 import com.elearning.resourceserver.domain.dto.AdminStatsDto;
 import com.elearning.resourceserver.domain.dto.OrganisationStatsDto;
 import com.elearning.resourceserver.domain.dto.TrainerStatsDto;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -10,7 +12,7 @@ import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
 @Repository
-public interface StatsRepository extends org.springframework.data.repository.Repository<Object, UUID> {
+public interface StatsRepository extends JpaRepository<Formation, UUID> {
 
     @Query(value = """
         SELECT 

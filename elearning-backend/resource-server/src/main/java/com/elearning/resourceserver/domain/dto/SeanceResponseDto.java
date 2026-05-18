@@ -11,12 +11,14 @@ public class SeanceResponseDto {
     private UUID courseId;
     private String type;
     private String videoKey;
+    private String pdfKey;
     private Integer durationSeconds;
-    private String meetLink;
+    private String meetingLink;
     private LocalDateTime scheduledAt;
     private Integer orderIndex;
     private Boolean isPublished;
     
     private String streamUrlExpiry;
     private Boolean isCompleted;
+    private String status;
 }

@@ -28,6 +28,7 @@ public class Quiz {
     @Column(nullable = false)
     private String title;
 
+    @Column(name = "timer_seconds")
     private Integer timeLimit;
 
     @Column(nullable = false)

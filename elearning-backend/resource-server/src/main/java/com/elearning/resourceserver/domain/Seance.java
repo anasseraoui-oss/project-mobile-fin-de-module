@@ -33,8 +33,10 @@ public class Seance {
     private LocalDateTime scheduledAt;
 
     /** Duration in minutes */
+    @Column(name = "duration_seconds")
     private Integer duration;
 
+    @Column(name = "meet_link")
     private String meetingLink;
 
     @Enumerated(EnumType.STRING)

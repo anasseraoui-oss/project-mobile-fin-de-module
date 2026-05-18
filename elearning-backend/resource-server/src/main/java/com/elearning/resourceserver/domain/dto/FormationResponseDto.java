@@ -9,18 +9,22 @@ import java.util.UUID;
 public class FormationResponseDto {
     private UUID id;
     private String title;
+    private String slug;
     private String description;
     private String thumbnailKey;
+    private String coverImageKey;
     private String level;
     private String language;
     private Double price;
     private Boolean isPublished;
+    private String status;
     private List<UUID> prerequisiteIds;
     private String certificateTemplateKey;
     private LocalDateTime createdAt;
     
     private UUID organisationId;
     private String organisationName;
+    private UUID formateurId;
     
     private Integer coursesCount;
     private Integer enrolledCount;

@@ -5,6 +5,8 @@ import com.elearning.resourceserver.domain.Message;
 import com.elearning.resourceserver.domain.dto.ForumPostDto;
 import com.elearning.resourceserver.repository.ForumPostRepository;
 import com.elearning.resourceserver.repository.MessageRepository;
+import com.elearning.resourceserver.repository.UserRepository;
+import com.elearning.resourceserver.repository.SeanceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,23 +23,27 @@ public class ChatAndForumService {
 
     private final MessageRepository messageRepository;
     private final ForumPostRepository forumPostRepository;
+    private final UserRepository userRepository;
+    private final SeanceRepository seanceRepository;
 
     public Message saveDirectMessage(UUID senderId, UUID receiverId, String content) {
         Message msg = new Message();
-        msg.setSenderId(senderId);
-        msg.setReceiverId(receiverId);
+        msg.setSender(userRepository.getReferenceById(senderId));
+        msg.setReceiver(userRepository.getReferenceById(receiverId));
         msg.setContent(content);
         msg.setSentAt(LocalDateTime.now());
-        msg.setRead(false);
+        msg.setIsRead(false);
         return messageRepository.save(msg);
     }
 
     public ForumPost saveForumPost(UUID authorId, UUID seanceId, String content, UUID parentId) {
         ForumPost post = new ForumPost();
-        post.setAuthorId(authorId);
-        post.setSeanceId(seanceId);
+        post.setAuthor(userRepository.getReferenceById(authorId));
+        post.setSeance(seanceRepository.getReferenceById(seanceId));
         post.setContent(content);
-        post.setParentId(parentId);
+        if (parentId != null) {
+            post.setParent(forumPostRepository.getReferenceById(parentId));
+        }
         post.setCreatedAt(LocalDateTime.now());
         return forumPostRepository.save(post);
     }
@@ -52,10 +58,10 @@ public class ChatAndForumService {
     private ForumPostDto mapToDto(ForumPost post) {
         ForumPostDto dto = new ForumPostDto();
         dto.setId(post.getId());
-        dto.setAuthorId(post.getAuthorId());
-        dto.setSeanceId(post.getSeanceId());
+        dto.setAuthorId(post.getAuthor() != null ? post.getAuthor().getId() : null);
+        dto.setSeanceId(post.getSeance() != null ? post.getSeance().getId() : null);
         dto.setContent(post.getContent());
-        dto.setParentId(post.getParentId());
+        dto.setParentId(post.getParent() != null ? post.getParent().getId() : null);
         dto.setCreatedAt(post.getCreatedAt());
         return dto;
     }

@@ -91,7 +91,7 @@ public class FormationService {
 
             String coverImageKey = null;
             if (thumbnail != null && !thumbnail.isEmpty()) {
-                coverImageKey = minioService.uploadFile(thumbnail, bucketPublic, "thumbnails/formations");
+                coverImageKey = minioService.uploadFile(thumbnail, bucketPublic);
             }
 
             Formation formation = new Formation();
@@ -99,13 +99,12 @@ public class FormationService {
             formation.setDescription(dto.getDescription());
             formation.setLevel(dto.getLevel() != null ? FormationLevel.valueOf(dto.getLevel()) : null);
             formation.setLanguage(dto.getLanguage());
-            formation.setPrice(dto.getPrice() != null ? dto.getPrice() : BigDecimal.ZERO);
-            formation.setCurrency(dto.getCurrency() != null ? dto.getCurrency() : "MAD");
+            formation.setPrice(dto.getPrice() != null ? BigDecimal.valueOf(dto.getPrice()) : BigDecimal.ZERO);
+            formation.setCurrency("MAD");
             formation.setOrganisationId(organisationId);
             formation.setFormateurId(currentUserId);
             formation.setCoverImageKey(coverImageKey);
-            formation.setMaxStudents(dto.getMaxStudents());
-            formation.setPrerequisitesText(dto.getPrerequisitesText());
+            
             // Generate slug
             formation.setSlug(slugify(dto.getTitle()) + "-" + UUID.randomUUID().toString().substring(0, 8));
             // Always BROUILLON at creation
@@ -132,7 +131,7 @@ public class FormationService {
         if (dto.getDescription() != null) formation.setDescription(dto.getDescription());
         if (dto.getLevel() != null) formation.setLevel(FormationLevel.valueOf(dto.getLevel()));
         if (dto.getLanguage() != null) formation.setLanguage(dto.getLanguage());
-        if (dto.getPrice() != null) formation.setPrice(dto.getPrice());
+        if (dto.getPrice() != null) formation.setPrice(java.math.BigDecimal.valueOf(dto.getPrice()));
 
         formationRepository.save(formation);
     }
@@ -245,7 +244,7 @@ public class FormationService {
         dto.setDescription(formation.getDescription());
         dto.setLevel(formation.getLevel() != null ? formation.getLevel().name() : null);
         dto.setLanguage(formation.getLanguage());
-        dto.setPrice(formation.getPrice());
+        dto.setPrice(formation.getPrice() != null ? formation.getPrice().doubleValue() : null);
         dto.setStatus(formation.getStatus().name());
         dto.setOrganisationId(formation.getOrganisationId());
         dto.setFormateurId(formation.getFormateurId());
