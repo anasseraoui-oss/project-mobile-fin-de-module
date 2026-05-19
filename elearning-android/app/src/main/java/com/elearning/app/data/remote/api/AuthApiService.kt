@@ -22,6 +22,7 @@ interface AuthApiService {
         @Field("username") username: String,
         @Field("password") password: String,
         @Field("client_id") clientId: String = "elearning-mobile-client",
+        @Field("client_secret") clientSecret: String = "elearning-mobile-secret",
         @Field("scope") scope: String = "openid profile email offline_access"
     ): Response<TokenResponseDto>
 
@@ -59,11 +60,6 @@ interface AuthApiService {
         @Field("client_id") clientId: String = "elearning-mobile-client"
     ): Response<Unit>
 
-    /**
-     * Fetch the currently authenticated user profile from the resource server.
-     */
-    @GET("api/users/me")
-    suspend fun getCurrentUser(): Response<UserDto>
 
     /**
      * Register a new user.

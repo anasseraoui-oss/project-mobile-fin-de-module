@@ -22,7 +22,9 @@ public class RegisteredClientConfig {
     public RegisteredClientRepository registeredClientRepository() {
         RegisteredClient androidElearningApp = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("elearning-mobile-client")
-                // Aucune authentification cliente (pas de client_secret) requis pour les clients publics
+                // Pour le password grant, le client doit s'authentifier via client_secret dans le body
+                .clientSecret("{noop}elearning-mobile-secret")
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
                 .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)

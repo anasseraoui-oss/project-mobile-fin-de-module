@@ -1,0 +1,6 @@
+com/elearning/authserver/config/RegisteredClientConfig.class
+com/elearning/authserver/security/CustomUserDetailsService.class
+com/elearning/authserver/config/JwtCustomizerConfig.class
+com/elearning/authserver/config/SecurityConfig.class
+com/elearning/authserver/AuthServerApplication.class
+com/elearning/authserver/config/AuthorizationServerConfig.class

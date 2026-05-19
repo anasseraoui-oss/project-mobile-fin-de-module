@@ -1,0 +1,109 @@
+# 📘 DÉFINITION DU PRODUIT & SPÉCIFICATIONS TECHNIQUES
+**Projet :** Plateforme E-Learning Mobile (Modèle "Coursera/Udemy")
+**Équipe :** Groupe 6 (Master DevOps & Cloud Computing - UAE Larache)
+**Version :** 1.0 - Spécifications Complètes
+
+---
+
+## 1. VISION ET CONTEXTE DU PROJET
+La plateforme est une solution LMS (Learning Management System) native Android, couplée à un backend robuste en microservices (ou monolithe modulaire). L'objectif est d'offrir une expérience de formation continue fluide, hors ligne et interactive, avec un modèle multi-tenant (B2B2C) où des organisations publient du contenu consommé par des apprenants.
+
+### 1.1. Modèle Hiérarchique des Données
+La donnée pédagogique suit une structure stricte :
+`Organisation` ➔ `Formation` (Parcours complet) ➔ `Cours` (Modules) ➔ `Séance` (Live ou VOD MP4) ➔ `Quiz` (Évaluation) ➔ `Certificat` (Récompense).
+
+---
+
+## 2. ACTEURS ET RÔLES (RBAC)
+
+1. **Super Admin :**
+   - Supervise la plateforme globale.
+   - Valide les comptes "Organisation" et modère le contenu.
+   - Accès aux statistiques globales et métriques de performance.
+2. **Organisation (Tenant) :**
+   - Entreprise ou université publiant des formations.
+   - Gère son catalogue, ses formateurs et suit les inscriptions.
+3. **Formateur :**
+   - Crée et structure les cours et séances.
+   - Lance les sessions de présence (QR Code).
+   - Consulte les scores des quiz et la progression des apprenants.
+4. **Apprenant (Utilisateur final) :**
+   - Parcourt le catalogue, s'inscrit aux formations.
+   - Suit les vidéos (en streaming ou offline).
+   - Passe les quiz, valide les présences et obtient des certificats.
+
+---
+
+## 3. ARCHITECTURE TECHNIQUE GLOBALE
+
+### 3.1. Front-End : Mobile Android Natif
+- **Langage / UI :** Kotlin, Jetpack Compose.
+- **Architecture :** MVVM + Clean Architecture (Presentation, Domain, Data).
+- **Injection de Dépendances :** Dagger Hilt.
+- **Réseau :** Retrofit, OkHttp (Intercepteurs, gestion des tokens via Authenticator).
+- **Stockage Local (Offline-First) :** Room Database (Single Source of Truth), DataStore (Préférences & Tokens chiffrés).
+- **Lecteur Média :** ExoPlayer (avec intégration AndroidView dans Compose).
+- **Authentification :** AppAuth (OAuth2 PKCE flow).
+
+### 3.2. Back-End : Spring Boot 3.x
+- **Core Framework :** Spring Boot 3.x (Java/Kotlin).
+- **Sécurité :** Spring Authorization Server (OAuth 2.1, JWT, PKCE), Spring Resource Server.
+- **Base de Données :** PostgreSQL 16 (Schémas `elearning_auth` et `elearning_app`).
+- **Cache & Sessions :** Redis 7 (Token store, synchronisation des Timers de Quiz).
+- **Stockage Fichiers (S3) :** MinIO (Hébergement des vidéos, PDF de certificats, génération de Presigned URLs sécurisées).
+
+---
+
+## 4. FONCTIONNALITÉS CŒURS & PARCOURS UTILISATEUR
+
+### 4.1. Catalogue et Découverte (Apprenant)
+- **Catalogue UI :** Grille adaptative (`LazyVerticalGrid`).
+- **Filtres dynamiques :** Par niveau, langue, organisation (via `FilterChips`).
+- **Recherche temps réel :** SearchBar avec debounce (300ms) et pagination (Paging3).
+
+### 4.2. Expérience de Lecture Vidéo (Course Player)
+- **Streaming sécurisé :** Récupération d'une *Presigned URL* MinIO temporaire (`GET /seances/{id}/stream-url`).
+- **Contrôles ExoPlayer :** Vitesse de lecture dynamique (0.75x à 2.0x), mode plein écran.
+- **Tracking de progression :** Appel POST silencieux toutes les 10 secondes (`/progress/{seanceId}`) pour sauvegarder l'avancement.
+- **Support Offline :** Si la vidéo a été téléchargée et mise en cache via Room, l'ExoPlayer charge l'URI locale.
+
+### 4.3. Système d'Évaluation (Quiz)
+- **Moteur de Quiz :** `QuizSessionManager` implémentant un compte à rebours Android synchronisé au TTL Redis du backend pour éviter la triche.
+- **Types de questions :** QCM (Radio), Vrai/Faux (Toggle), Réponses ouvertes.
+- **Comportement :** Soumission automatique si le temps est écoulé.
+- **Résultats :** Écran de correction immédiate (code couleur vert/rouge) avec affichage du score.
+
+### 4.4. Génération & Vérification de Certificats
+- **Backend :** Utilisation de `iTextPDF` pour générer un certificat personnalisé (Nom, Formation, Date, Score).
+- **Sécurité :** Intégration d'un QR code dans le PDF renvoyant vers une URL publique de vérification (`/verify/{uuid}`).
+- **Mobile :** Téléchargement du PDF depuis MinIO et sauvegarde dans l'appareil.
+
+### 4.5. Gestion de Présence In-Situ (QR Code)
+- **Flux Formateur :** Demande au backend la génération d'un QR dynamique (`GET /qr-code/generate`) avec un TTL de 5 minutes. Affichage plein écran (via `qrcode-kotlin`).
+- **Flux Apprenant :** Utilisation de l'appareil photo via `CameraX` et `ML Kit Barcode Scanning` pour scanner le QR. Le mobile fait un `POST /attendance/scan` pour valider la présence à la séance.
+
+---
+
+## 5. EXIGENCES NON-FONCTIONNELLES (NFR)
+
+### 5.1. UX / UI & Accessibilité
+- **Design System :** Material Design 3 (Dynamic Colors, Palette stricte : Primary, Secondary, Surface, Error).
+- **Internationalisation (i18n) :** Support total FR, EN, et AR (incluant le mode RTL natif pour l'Arabe).
+- **Thématisation :** Support du Dark Mode dynamique avec inversion des couleurs.
+- **Adaptabilité (Responsive) :** Utilisation de `WindowSizeClass` (Bottom Navigation sur smartphone, Navigation Rail/Drawer sur tablette).
+
+### 5.2. Résilience et Offline-First
+- L'application doit continuer à fonctionner sans réseau pour le contenu préalablement téléchargé.
+- Architecture basée sur le modèle "Single Source of Truth" : Les appels API mettent à jour la base Room locale, et l'UI observe exclusivement (via StateFlow) la base de données Room.
+
+### 5.3. Communication et Engagement
+- **Notifications Push :** Implémentation via Firebase Cloud Messaging (FCM).
+- **Deep Linking :** Un clic sur une notification (ex: "Nouveau cours disponible") lance l'application directement sur l'écran cible (`FormationDetailScreen` ou `CoursePlayer`).
+
+---
+
+## 6. MODÈLE ÉCONOMIQUE & POTENTIEL (Business Value)
+L'architecture est pensée "Cloud-Ready" pour une exploitation B2B (SaaS) :
+1. **Multi-Tenancy :** Isolation logique des données par organisation.
+2. **Scalabilité :** Utilisation de MinIO pour le stockage horizontal des médias lourds, indépendamment de la base de données.
+3. **Monétisation future :** Modèle d'abonnement par organisation ou par apprenant (Pay-per-course), supporté techniquement par la séparation stricte du *Resource Server*.

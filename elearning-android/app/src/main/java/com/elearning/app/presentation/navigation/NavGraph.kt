@@ -1,9 +1,13 @@
 package com.elearning.app.presentation.navigation
 
+import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,6 +17,7 @@ import com.elearning.app.presentation.auth.AuthViewModel
 import com.elearning.app.presentation.auth.screen.ForgotPasswordScreen
 import com.elearning.app.presentation.auth.screen.LoginScreen
 import com.elearning.app.presentation.auth.screen.RegisterScreen
+import com.elearning.app.presentation.main.MainScreen
 
 // ─── Route Constants ──────────────────────────────────────────────────────────
 
@@ -105,12 +110,14 @@ fun ELearningNavGraph(
             )
         }
 
-        // ── App Graph (placeholder — populated in Part 3) ───────────────────
+        // ── App Graph ───────────────────
+        @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
         composable(Routes.HOME) {
-            // AppScaffold will be added in Part 3
-            AppScaffoldPlaceholder(
-                authViewModel = authViewModel,
-                navController = navController
+            val context = LocalContext.current
+            val windowSizeClass = calculateWindowSizeClass(context as Activity)
+            MainScreen(
+                windowSizeClass = windowSizeClass,
+                onLogout = { authViewModel.logout() }
             )
         }
     }

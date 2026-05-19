@@ -26,8 +26,8 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${AUTH_SERVER_URL:http://localhost:9000}
-          jwk-set-uri: ${AUTH_SERVER_URL:http://localhost:9000}/oauth2/jwks
+          issuer-uri: ${AUTH_SERVER_ISSUER_URI:http://192.168.1.103:9000}
+          jwk-set-uri: ${AUTH_SERVER_URL:http://192.168.1.103:9000}/oauth2/jwks
 
 minio:
   url: ${MINIO_INTERNAL_URL:http://localhost:9000}

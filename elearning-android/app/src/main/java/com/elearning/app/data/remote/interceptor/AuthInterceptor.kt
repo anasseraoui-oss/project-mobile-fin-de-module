@@ -2,11 +2,10 @@ package com.elearning.app.data.remote.interceptor
 
 import com.elearning.app.data.local.datastore.TokenManager
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
+import java.util.concurrent.locks.ReentrantLock
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
@@ -15,69 +14,77 @@ import javax.inject.Singleton
  * OkHttp Interceptor responsible for:
  *  1. Injecting the Bearer token into every outgoing request.
  *  2. Detecting 401 Unauthorized responses.
- *  3. Attempting a token refresh exactly once (thread-safe via Mutex).
+ *  3. Attempting a token refresh exactly once (thread-safe via ReentrantLock).
  *  4. Retrying the original request with the new token.
  *  5. Clearing tokens and signalling logout if refresh also fails.
  *
- * Uses [Provider<AuthService>] (lazy injection) to break the circular dependency:
- *   NetworkModule -> AuthInterceptor -> AuthService -> Retrofit -> NetworkModule
+ * ⚠️ IMPORTANT — Why ReentrantLock instead of kotlinx Mutex:
+ *   kotlinx.coroutines.sync.Mutex + runBlocking on OkHttp thread pool threads
+ *   creates a deadlock: the coroutine suspends waiting for the mutex, but
+ *   runBlocking has already occupied the thread → SIGABRT (Fatal signal 6).
+ *   A standard ReentrantLock never suspends — it blocks the calling thread
+ *   directly, which is safe inside OkHttp's intercept().
+ *
+ * Uses [Provider<AuthApiService>] (lazy injection) to break the circular dependency:
+ *   NetworkModule → AuthInterceptor → AuthApiService → Retrofit → NetworkModule
  */
 @Singleton
 class AuthInterceptor @Inject constructor(
     private val tokenManager: TokenManager,
-    // Lazy provider avoids circular dependency at graph construction time
     private val authServiceProvider: Provider<com.elearning.app.data.remote.api.AuthApiService>
 ) : Interceptor {
 
-    /** Ensures only ONE refresh call runs at a time across concurrent requests. */
-    private val refreshMutex = Mutex()
+    /**
+     * Java ReentrantLock — blocks the thread directly (no coroutine suspension).
+     * Safe to use inside OkHttp's intercept() which runs on a background thread.
+     */
+    private val refreshLock = ReentrantLock()
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
 
-        // Attach current access token (if available)
-        val authenticatedRequest = runBlocking {
-            originalRequest.withBearerToken(tokenManager.getAccessToken())
-        }
-
+        // Read access token synchronously from DataStore using Dispatchers.IO
+        val accessToken = runBlocking { tokenManager.getAccessToken() }
+        val authenticatedRequest = originalRequest.withBearerToken(accessToken)
         val response = chain.proceed(authenticatedRequest)
 
-        // Fast path: not a 401, return immediately
+        // Fast path: not a 401 — return immediately
         if (response.code != 401) return response
 
         // 401 → attempt token refresh
         response.close()
 
-        return runBlocking {
-            refreshMutex.withLock {
-                // Double-check: another coroutine may have already refreshed
-                val currentToken = tokenManager.getAccessToken()
-                val alreadyRefreshed = currentToken != null &&
-                        currentToken != (authenticatedRequest.header("Authorization")
-                    ?.removePrefix("Bearer ")?.trim())
+        // Only one thread at a time does the refresh
+        refreshLock.lock()
+        try {
+            // Double-check: another thread may have already refreshed the token
+            val currentToken = runBlocking { tokenManager.getAccessToken() }
+            val tokenWasAlreadyRefreshed = currentToken != null &&
+                    currentToken != accessToken
 
-                if (alreadyRefreshed) {
-                    // Re-try with the token that was refreshed by another coroutine
-                    chain.proceed(originalRequest.withBearerToken(currentToken))
+            return if (tokenWasAlreadyRefreshed) {
+                // Another thread already refreshed — just retry with the new token
+                chain.proceed(originalRequest.withBearerToken(currentToken))
+            } else {
+                // We are the first — actually do the refresh
+                val refreshed = runBlocking { tryRefreshToken() }
+                if (refreshed) {
+                    val newToken = runBlocking { tokenManager.getAccessToken() }
+                    chain.proceed(originalRequest.withBearerToken(newToken))
                 } else {
-                    // Actually attempt a token refresh
-                    val refreshed = tryRefreshToken()
-                    if (refreshed) {
-                        val newToken = tokenManager.getAccessToken()
-                        chain.proceed(originalRequest.withBearerToken(newToken))
-                    } else {
-                        // Refresh failed — clear tokens (user must re-login)
-                        tokenManager.clearAll()
-                        chain.proceed(originalRequest) // will return 401 to ViewModel
-                    }
+                    // Refresh failed — clear stored tokens (user must re-login)
+                    runBlocking { tokenManager.clearAll() }
+                    chain.proceed(originalRequest) // Returns 401 to the ViewModel
                 }
             }
+        } finally {
+            refreshLock.unlock()
         }
     }
 
     /**
-     * Calls the refresh endpoint and updates the stored tokens.
-     * Returns true on success, false on any error.
+     * Calls the /oauth2/token refresh endpoint and persists the new tokens.
+     * Returns true on success, false on any network or server error.
      */
     private suspend fun tryRefreshToken(): Boolean {
         val refreshToken = tokenManager.getRefreshToken() ?: return false
@@ -109,7 +116,7 @@ class AuthInterceptor @Inject constructor(
     }
 }
 
-/** Extension: create a copy of the Request with an Authorization header. */
+/** Extension: create a copy of the Request with an Authorization: Bearer header. */
 private fun Request.withBearerToken(token: String?): Request {
     if (token.isNullOrBlank()) return this
     return newBuilder()

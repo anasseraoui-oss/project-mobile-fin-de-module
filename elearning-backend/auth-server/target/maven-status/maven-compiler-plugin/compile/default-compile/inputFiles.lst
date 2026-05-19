@@ -1,0 +1,6 @@
+/app/auth-server/src/main/java/com/elearning/authserver/config/RegisteredClientConfig.java
+/app/auth-server/src/main/java/com/elearning/authserver/security/CustomUserDetailsService.java
+/app/auth-server/src/main/java/com/elearning/authserver/config/AuthorizationServerConfig.java
+/app/auth-server/src/main/java/com/elearning/authserver/AuthServerApplication.java
+/app/auth-server/src/main/java/com/elearning/authserver/config/JwtCustomizerConfig.java
+/app/auth-server/src/main/java/com/elearning/authserver/config/SecurityConfig.java

@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="1dbf8873-9940-4f54-b9da-652a0d92b9cd" name="Changes" comment="update for frontend +2">
+      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build-auth.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/context-errour.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/contexte.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-android/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/src/main/java/com/elearning/authserver/security/passwordgrant/CustomPasswordAuthenticationConverter.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/src/main/java/com/elearning/authserver/security/passwordgrant/CustomPasswordAuthenticationProvider.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/src/main/java/com/elearning/authserver/security/passwordgrant/CustomPasswordAuthenticationToken.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/auth-server-0.0.1-SNAPSHOT.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/auth-server-0.0.1-SNAPSHOT.jar.original" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/classes/application.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/classes/com/elearning/authserver/AuthServerApplication.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/classes/com/elearning/authserver/config/AuthorizationServerConfig.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/classes/com/elearning/authserver/config/JwtCustomizerConfig.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/classes/com/elearning/authserver/config/RegisteredClientConfig.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/classes/com/elearning/authserver/config/SecurityConfig.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/classes/com/elearning/authserver/security/CustomUserDetailsService.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/classes/com/elearning/authserver/security/passwordgrant/CustomPasswordAuthenticationConverter.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/classes/com/elearning/authserver/security/passwordgrant/CustomPasswordAuthenticationProvider.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/classes/com/elearning/authserver/security/passwordgrant/CustomPasswordAuthenticationToken.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/maven-archiver/pom.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/auth-server/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/build.log" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/src/main/java/com/elearning/resourceserver/api/NotificationController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/src/main/java/com/elearning/resourceserver/api/UserProfileController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/src/main/java/com/elearning/resourceserver/config/DataSeeder.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/src/main/java/com/elearning/resourceserver/config/ResourceSecurityConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/src/main/java/com/elearning/resourceserver/domain/Notification.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/src/main/java/com/elearning/resourceserver/domain/enums/NotificationType.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/src/main/java/com/elearning/resourceserver/exceptions/AccessDeniedException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/src/main/java/com/elearning/resourceserver/exceptions/UnauthorizedException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/src/main/java/com/elearning/resourceserver/infrastructure/minio/MinioConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/src/main/java/com/elearning/resourceserver/repository/NotificationRepository.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/src/main/resources/db/migration/V2__sync_schema.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/application.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/ResourceServerApplication.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/api/AdminController.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/api/AuthController.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/api/CertificatController.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/api/ChatAndForumController.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/api/CourseAndSeanceController.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/api/FormationController.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/api/NotificationController.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/api/OrganisationController.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/api/PresenceController.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/api/ProgressionController.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/api/QuizController.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/api/UserProfileController.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/application/events/ProgressionEventHandler.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/application/scheduler/NotificationScheduler.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/application/services/CertificateService.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/application/services/ChatAndForumService.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/application/services/CourseAndSeanceService.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/application/services/FormationService.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/application/services/NotificationService.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/application/services/OrganisationService.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/application/services/PresenceService.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/application/services/QuizService.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/config/DataSeeder.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/config/ResourceSecurityConfig.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/config/WebSocketConfig$1.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/config/WebSocketConfig.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Attendance.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Certificat.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Course.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Enrollment.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Formation.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/ForumPost.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Inscription.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Message.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Notification$NotificationBuilder.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Notification.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Organisation.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Presence.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Progress.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Progression.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Quiz.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/QuizAttempt.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/QuizQuestion.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/QuizReponse.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/Seance.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/TentativeQuiz.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/User.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/AdminStatsDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/AttendanceResponseDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/CourseRequestDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/CourseResponseDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/FormationRequestDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/FormationResponseDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/ForumPostDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/MessageDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/OrganisationStatsDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/QuizRequestDto$QuestionDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/QuizRequestDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/QuizResponseDto$QuestionResponseDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/QuizResponseDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/QuizResultDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/QuizSubmitDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/SeanceRequestDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/SeanceResponseDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/dto/TrainerStatsDto.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/AuthProvider.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/CoursStatus.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/FormationLevel.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/FormationStatus.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/InscriptionStatus.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/NotificationType.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/OrganisationStatus.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/PresenceStatus.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/QuizQuestionType.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/QuizStatus.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/Role.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/SeanceStatus.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/SeanceType.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/TentativeQuizStatus.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/enums/ValidationMethod.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/events/InscriptionCreatedEvent.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/events/OrganisationValidatedEvent.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/events/PresenceCreatedEvent.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/events/QuizSubmittedEvent.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/domain/events/QuizValidatedEvent.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/exceptions/AccessDeniedException.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/exceptions/GlobalExceptionHandler$ErrorResponse.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/exceptions/GlobalExceptionHandler.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/exceptions/MinioOperationException.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/exceptions/QuizSessionExpiredException.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/exceptions/ResourceNotFoundException.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/exceptions/UnauthorizedException.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/exceptions/ValidationException.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/infrastructure/firebase/FcmConfig.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/infrastructure/minio/MinioConfig.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/infrastructure/minio/MinioService.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/AttendanceRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/CertificatRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/CourseRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/EnrollmentRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/FormationRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/ForumPostRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/InscriptionRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/MessageRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/NotificationRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/OrganisationRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/PresenceRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/ProgressRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/ProgressionRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/QuizAttemptRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/QuizReponseRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/QuizRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/SeanceRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/StatsRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/TentativeQuizRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/repository/UserRepository.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/com/elearning/resourceserver/util/SecurityUtils.class" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/db/migration/V1__init.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/classes/db/migration/V2__sync_schema.sql" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/elearning-backend/resource-server/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/prompt_finision_frentend.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/elearning-android/.gradle/9.0.0/executionHistory/executionHistory.bin" beforeDir="false" afterPath="$PROJECT_DIR$/elearning-android/.gradle/9.0.0/executionHistory/executionHistory.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/elearning-android/.gradle/9.0.0/executionHistory/executionHistory.lock" beforeDir="false" afterPath="$PROJECT_DIR$/elearning-android/.gradle/9.0.0/executionHistory/executionHistory.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/elearning-android/.gradle/9.0.0/fileHashes/fileHashes.bin" beforeDir="false" afterPath="$PROJECT_DIR$/elearning-android/.gradle/9.0.0/fileHashes/fileHashes.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/elearning-android/.gradle/9.0.0/fileHashes/fileHashes.lock" beforeDir="false" afterPath="$PROJECT_DIR$/elearning-android/.gradle/9.0.0/fileHashes/fileHashes.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/elearning-android/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/elearning-android/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/elearning-android/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/elearning-android/.idea/caches/deviceStreaming.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/elearning-android/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/elearning-android/.idea/gradle.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/elearning-android/app/build/intermediates/apk/debug/app-debug.apk" beforeDir="false" afterPath="$PROJECT_DIR$/elearning-android/app/build/intermediates/apk/debug/app-debug.apk" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/elearning-android/app/build/intermediates/incremental/packageDebug/tmp/debug/dex-renamer-state.txt" beforeDir="false" afterPath="$PROJECT_DIR$/elearning-android/app/build/intermediates/incremental/packageDebug/tmp/debug/dex-renamer-state.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/elearning-android/app/src/main/java/com/elearning/app/data/remote/api/AuthApiService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/elearning-android/app/src/main/java/com/elearning/app/data/remote/api/AuthApiService.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/elearning-backend/auth-server/src/main/java/com/elearning/authserver/config/RegisteredClientConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/elearning-backend/auth-server/src/main/java/com/elearning/authserver/config/RegisteredClientConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/elearning-backend/auth-server/src/main/java/com/elearning/authserver/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/elearning-backend/auth-server/src/main/java/com/elearning/authserver/config/SecurityConfig.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "anasseraoui-oss"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/anasseraoui-oss/project-mobile-fin-de-module",
+    "accountId": "e0b5c0b2-4607-4a17-ba92-64024cf66756"
+  }
+}]]></component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 6
+}</component>
+  <component name="ProjectId" id="3DK3OQqjQ2WYlwAf4fPZWRoPHqH" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Docker.docker-compose.yml: Compose Deployment.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/pc/Documents/project mobile fin de module/update/project-mobile-fin-de-module/project-mobile-fin-de-module&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RunManager">
+    <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
+      <deployment type="docker-compose.yml">
+        <settings />
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <configuration name="docker-compose.yml: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="sourceFilePath" value="docker-compose.yml" />
+        </settings>
+      </deployment>
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Docker.docker-compose.yml: Compose Deployment" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.26830.84" />
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-IU-252.26830.84" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="1dbf8873-9940-4f54-b9da-652a0d92b9cd" name="Changes" comment="" />
+      <created>1778016904348</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1778016904348</updated>
+      <workItem from="1778016905886" duration="3052000" />
+      <workItem from="1779121511206" duration="4313000" />
+    </task>
+    <task id="LOCAL-00001" summary="update for frontend">
+      <option name="closed" value="true" />
+      <created>1779121619069</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1779121619069</updated>
+    </task>
+    <task id="LOCAL-00002" summary="update for frontend">
+      <option name="closed" value="true" />
+      <created>1779122221651</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1779122221651</updated>
+    </task>
+    <task id="LOCAL-00003" summary="update for frontend +2">
+      <option name="closed" value="true" />
+      <created>1779124745441</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1779124745441</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="update for the first implementation of frontend" />
+    <MESSAGE value="new" />
+    <MESSAGE value="update for frontend" />
+    <MESSAGE value="update for frontend +2" />
+    <option name="LAST_COMMIT_MESSAGE" value="update for frontend +2" />
+  </component>
+</project>

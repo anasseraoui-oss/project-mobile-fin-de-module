@@ -18,7 +18,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
 @Composable
-fun MainScreen(windowSizeClass: WindowSizeClass) {
+fun MainScreen(
+    windowSizeClass: WindowSizeClass,
+    onLogout: () -> Unit = {}
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -42,6 +45,7 @@ fun MainScreen(windowSizeClass: WindowSizeClass) {
             
             ElearningNavGraph(
                 navController = navController,
+                onLogout = onLogout,
                 modifier = Modifier.weight(1f)
             )
         }

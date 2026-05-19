@@ -15,6 +15,7 @@ import com.elearning.app.presentation.scanner.ScannerScreen
 @Composable
 fun ElearningNavGraph(
     navController: NavHostController,
+    onLogout: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     NavHost(navController = navController, startDestination = "catalogue", modifier = modifier) {
@@ -39,7 +40,7 @@ fun ElearningNavGraph(
         }
         composable("profile") {
             ProfileScreen(
-                onLogout = { /* Handle logout logic, navigate to Login Graph */ }
+                onLogout = onLogout
             )
         }
         composable("quiz/{quizId}") {

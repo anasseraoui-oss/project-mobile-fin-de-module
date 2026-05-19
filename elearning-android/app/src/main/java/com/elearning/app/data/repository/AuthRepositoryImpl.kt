@@ -5,6 +5,7 @@ import android.net.Uri
 import com.elearning.app.BuildConfig
 import com.elearning.app.data.local.datastore.TokenManager
 import com.elearning.app.data.remote.api.AuthApiService
+import com.elearning.app.data.remote.api.ResourceApiService
 import com.elearning.app.data.remote.mapper.toDomain
 import com.elearning.app.domain.model.AuthState
 import com.elearning.app.domain.model.AuthTokens
@@ -37,6 +38,7 @@ import javax.inject.Singleton
 class AuthRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val authApiService: AuthApiService,
+    private val resourceApiService: ResourceApiService,
     private val tokenManager: TokenManager
 ) : AuthRepository {
 
@@ -208,7 +210,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun getCurrentUser(): Result<User> {
         return try {
-            val response = authApiService.getCurrentUser()
+            val response = resourceApiService.getCurrentUser()
             if (response.isSuccessful) {
                 val user = response.body()!!.toDomain()
                 tokenManager.saveUserInfo(user.id.toString(), user.role.name)

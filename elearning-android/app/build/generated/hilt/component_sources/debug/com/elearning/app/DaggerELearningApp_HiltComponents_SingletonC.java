@@ -435,28 +435,19 @@ public final class DaggerELearningApp_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
-      static String com_elearning_app_presentation_quiz_QuizViewModel = "com.elearning.app.presentation.quiz.QuizViewModel";
+      static String com_elearning_app_presentation_auth_AuthViewModel = "com.elearning.app.presentation.auth.AuthViewModel";
+
+      static String com_elearning_app_presentation_scanner_ScannerViewModel = "com.elearning.app.presentation.scanner.ScannerViewModel";
 
       static String com_elearning_app_presentation_catalogue_CatalogueViewModel = "com.elearning.app.presentation.catalogue.CatalogueViewModel";
 
       static String com_elearning_app_presentation_formation_FormationDetailViewModel = "com.elearning.app.presentation.formation.FormationDetailViewModel";
 
-      static String com_elearning_app_presentation_auth_AuthViewModel = "com.elearning.app.presentation.auth.AuthViewModel";
-
-      static String com_elearning_app_presentation_scanner_ScannerViewModel = "com.elearning.app.presentation.scanner.ScannerViewModel";
-
-      static String com_elearning_app_presentation_prof_CreateFormationViewModel = "com.elearning.app.presentation.prof.CreateFormationViewModel";
+      static String com_elearning_app_presentation_quiz_QuizViewModel = "com.elearning.app.presentation.quiz.QuizViewModel";
 
       static String com_elearning_app_presentation_player_SeancePlayerViewModel = "com.elearning.app.presentation.player.SeancePlayerViewModel";
 
-      @KeepFieldType
-      QuizViewModel com_elearning_app_presentation_quiz_QuizViewModel2;
-
-      @KeepFieldType
-      CatalogueViewModel com_elearning_app_presentation_catalogue_CatalogueViewModel2;
-
-      @KeepFieldType
-      FormationDetailViewModel com_elearning_app_presentation_formation_FormationDetailViewModel2;
+      static String com_elearning_app_presentation_prof_CreateFormationViewModel = "com.elearning.app.presentation.prof.CreateFormationViewModel";
 
       @KeepFieldType
       AuthViewModel com_elearning_app_presentation_auth_AuthViewModel2;
@@ -465,10 +456,19 @@ public final class DaggerELearningApp_HiltComponents_SingletonC {
       ScannerViewModel com_elearning_app_presentation_scanner_ScannerViewModel2;
 
       @KeepFieldType
-      CreateFormationViewModel com_elearning_app_presentation_prof_CreateFormationViewModel2;
+      CatalogueViewModel com_elearning_app_presentation_catalogue_CatalogueViewModel2;
+
+      @KeepFieldType
+      FormationDetailViewModel com_elearning_app_presentation_formation_FormationDetailViewModel2;
+
+      @KeepFieldType
+      QuizViewModel com_elearning_app_presentation_quiz_QuizViewModel2;
 
       @KeepFieldType
       SeancePlayerViewModel com_elearning_app_presentation_player_SeancePlayerViewModel2;
+
+      @KeepFieldType
+      CreateFormationViewModel com_elearning_app_presentation_prof_CreateFormationViewModel2;
     }
   }
 
@@ -557,22 +557,28 @@ public final class DaggerELearningApp_HiltComponents_SingletonC {
 
     @IdentifierNameString
     private static final class LazyClassKeyProvider {
+      static String com_elearning_app_presentation_catalogue_CatalogueViewModel = "com.elearning.app.presentation.catalogue.CatalogueViewModel";
+
       static String com_elearning_app_presentation_player_SeancePlayerViewModel = "com.elearning.app.presentation.player.SeancePlayerViewModel";
+
+      static String com_elearning_app_presentation_quiz_QuizViewModel = "com.elearning.app.presentation.quiz.QuizViewModel";
 
       static String com_elearning_app_presentation_scanner_ScannerViewModel = "com.elearning.app.presentation.scanner.ScannerViewModel";
 
       static String com_elearning_app_presentation_prof_CreateFormationViewModel = "com.elearning.app.presentation.prof.CreateFormationViewModel";
 
-      static String com_elearning_app_presentation_catalogue_CatalogueViewModel = "com.elearning.app.presentation.catalogue.CatalogueViewModel";
+      static String com_elearning_app_presentation_auth_AuthViewModel = "com.elearning.app.presentation.auth.AuthViewModel";
 
       static String com_elearning_app_presentation_formation_FormationDetailViewModel = "com.elearning.app.presentation.formation.FormationDetailViewModel";
 
-      static String com_elearning_app_presentation_auth_AuthViewModel = "com.elearning.app.presentation.auth.AuthViewModel";
-
-      static String com_elearning_app_presentation_quiz_QuizViewModel = "com.elearning.app.presentation.quiz.QuizViewModel";
+      @KeepFieldType
+      CatalogueViewModel com_elearning_app_presentation_catalogue_CatalogueViewModel2;
 
       @KeepFieldType
       SeancePlayerViewModel com_elearning_app_presentation_player_SeancePlayerViewModel2;
+
+      @KeepFieldType
+      QuizViewModel com_elearning_app_presentation_quiz_QuizViewModel2;
 
       @KeepFieldType
       ScannerViewModel com_elearning_app_presentation_scanner_ScannerViewModel2;
@@ -581,16 +587,10 @@ public final class DaggerELearningApp_HiltComponents_SingletonC {
       CreateFormationViewModel com_elearning_app_presentation_prof_CreateFormationViewModel2;
 
       @KeepFieldType
-      CatalogueViewModel com_elearning_app_presentation_catalogue_CatalogueViewModel2;
-
-      @KeepFieldType
-      FormationDetailViewModel com_elearning_app_presentation_formation_FormationDetailViewModel2;
-
-      @KeepFieldType
       AuthViewModel com_elearning_app_presentation_auth_AuthViewModel2;
 
       @KeepFieldType
-      QuizViewModel com_elearning_app_presentation_quiz_QuizViewModel2;
+      FormationDetailViewModel com_elearning_app_presentation_formation_FormationDetailViewModel2;
     }
 
     private static final class SwitchingProvider<T> implements Provider<T> {
@@ -735,12 +735,6 @@ public final class DaggerELearningApp_HiltComponents_SingletonC {
 
     private Provider<TokenManager> tokenManagerProvider;
 
-    private Provider<AuthRepositoryImpl> authRepositoryImplProvider;
-
-    private Provider<AppAuthConfiguration> provideAppAuthConfigurationProvider;
-
-    private Provider<AuthorizationService> provideAuthorizationServiceProvider;
-
     private Provider<AuthInterceptor> authInterceptorProvider;
 
     private Provider<OkHttpClient> provideResourceOkHttpClientProvider;
@@ -748,6 +742,12 @@ public final class DaggerELearningApp_HiltComponents_SingletonC {
     private Provider<Retrofit> provideResourceRetrofitProvider;
 
     private Provider<ResourceApiService> provideResourceApiServiceProvider;
+
+    private Provider<AuthRepositoryImpl> authRepositoryImplProvider;
+
+    private Provider<AppAuthConfiguration> provideAppAuthConfigurationProvider;
+
+    private Provider<AuthorizationService> provideAuthorizationServiceProvider;
 
     private Provider<MockFormationRepositoryImpl> mockFormationRepositoryImplProvider;
 
@@ -773,14 +773,14 @@ public final class DaggerELearningApp_HiltComponents_SingletonC {
       this.provideAuthOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 3));
       this.provideAuthRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 2));
       this.provideAuthApiServiceProvider = DoubleCheck.provider(new SwitchingProvider<AuthApiService>(singletonCImpl, 1));
-      this.tokenManagerProvider = DoubleCheck.provider(new SwitchingProvider<TokenManager>(singletonCImpl, 5));
+      this.tokenManagerProvider = DoubleCheck.provider(new SwitchingProvider<TokenManager>(singletonCImpl, 9));
+      this.authInterceptorProvider = DoubleCheck.provider(new SwitchingProvider<AuthInterceptor>(singletonCImpl, 8));
+      this.provideResourceOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 7));
+      this.provideResourceRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 6));
+      this.provideResourceApiServiceProvider = DoubleCheck.provider(new SwitchingProvider<ResourceApiService>(singletonCImpl, 5));
       this.authRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<AuthRepositoryImpl>(singletonCImpl, 0));
-      this.provideAppAuthConfigurationProvider = DoubleCheck.provider(new SwitchingProvider<AppAuthConfiguration>(singletonCImpl, 7));
-      this.provideAuthorizationServiceProvider = DoubleCheck.provider(new SwitchingProvider<AuthorizationService>(singletonCImpl, 6));
-      this.authInterceptorProvider = DoubleCheck.provider(new SwitchingProvider<AuthInterceptor>(singletonCImpl, 11));
-      this.provideResourceOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 10));
-      this.provideResourceRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 9));
-      this.provideResourceApiServiceProvider = DoubleCheck.provider(new SwitchingProvider<ResourceApiService>(singletonCImpl, 8));
+      this.provideAppAuthConfigurationProvider = DoubleCheck.provider(new SwitchingProvider<AppAuthConfiguration>(singletonCImpl, 11));
+      this.provideAuthorizationServiceProvider = DoubleCheck.provider(new SwitchingProvider<AuthorizationService>(singletonCImpl, 10));
       this.mockFormationRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 12);
       this.bindFormationRepositoryProvider = DoubleCheck.provider((Provider) mockFormationRepositoryImplProvider);
       this.mockQuizRepositoryImplProvider = new SwitchingProvider<>(singletonCImpl, 13);
@@ -823,7 +823,7 @@ public final class DaggerELearningApp_HiltComponents_SingletonC {
       public T get() {
         switch (id) {
           case 0: // com.elearning.app.data.repository.AuthRepositoryImpl 
-          return (T) new AuthRepositoryImpl(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.provideAuthApiServiceProvider.get(), singletonCImpl.tokenManagerProvider.get());
+          return (T) new AuthRepositoryImpl(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.provideAuthApiServiceProvider.get(), singletonCImpl.provideResourceApiServiceProvider.get(), singletonCImpl.tokenManagerProvider.get());
 
           case 1: // com.elearning.app.data.remote.api.AuthApiService 
           return (T) NetworkModule_ProvideAuthApiServiceFactory.provideAuthApiService(singletonCImpl.provideAuthRetrofitProvider.get());
@@ -837,26 +837,26 @@ public final class DaggerELearningApp_HiltComponents_SingletonC {
           case 4: // okhttp3.logging.HttpLoggingInterceptor 
           return (T) NetworkModule_ProvideLoggingInterceptorFactory.provideLoggingInterceptor();
 
-          case 5: // com.elearning.app.data.local.datastore.TokenManager 
-          return (T) new TokenManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
-
-          case 6: // net.openid.appauth.AuthorizationService 
-          return (T) AuthModule_ProvideAuthorizationServiceFactory.provideAuthorizationService(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.provideAppAuthConfigurationProvider.get());
-
-          case 7: // net.openid.appauth.AppAuthConfiguration 
-          return (T) AuthModule_ProvideAppAuthConfigurationFactory.provideAppAuthConfiguration();
-
-          case 8: // com.elearning.app.data.remote.api.ResourceApiService 
+          case 5: // com.elearning.app.data.remote.api.ResourceApiService 
           return (T) NetworkModule_ProvideResourceApiServiceFactory.provideResourceApiService(singletonCImpl.provideResourceRetrofitProvider.get());
 
-          case 9: // @javax.inject.Named("resource") retrofit2.Retrofit 
+          case 6: // @javax.inject.Named("resource") retrofit2.Retrofit 
           return (T) NetworkModule_ProvideResourceRetrofitFactory.provideResourceRetrofit(singletonCImpl.provideResourceOkHttpClientProvider.get());
 
-          case 10: // @javax.inject.Named("resource") okhttp3.OkHttpClient 
+          case 7: // @javax.inject.Named("resource") okhttp3.OkHttpClient 
           return (T) NetworkModule_ProvideResourceOkHttpClientFactory.provideResourceOkHttpClient(singletonCImpl.provideLoggingInterceptorProvider.get(), singletonCImpl.authInterceptorProvider.get());
 
-          case 11: // com.elearning.app.data.remote.interceptor.AuthInterceptor 
+          case 8: // com.elearning.app.data.remote.interceptor.AuthInterceptor 
           return (T) new AuthInterceptor(singletonCImpl.tokenManagerProvider.get(), singletonCImpl.provideAuthApiServiceProvider);
+
+          case 9: // com.elearning.app.data.local.datastore.TokenManager 
+          return (T) new TokenManager(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 10: // net.openid.appauth.AuthorizationService 
+          return (T) AuthModule_ProvideAuthorizationServiceFactory.provideAuthorizationService(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.provideAppAuthConfigurationProvider.get());
+
+          case 11: // net.openid.appauth.AppAuthConfiguration 
+          return (T) AuthModule_ProvideAppAuthConfigurationFactory.provideAppAuthConfiguration();
 
           case 12: // com.elearning.app.data.repository.MockFormationRepositoryImpl 
           return (T) new MockFormationRepositoryImpl();
