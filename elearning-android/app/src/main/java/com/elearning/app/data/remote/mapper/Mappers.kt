@@ -29,22 +29,22 @@ fun UserDto.toDomain() = User(
 // ─── Formation ────────────────────────────────────────────────────────────────
 
 fun FormationDto.toDomain() = Formation(
-    id = UUID.fromString(id),
-    title = title,
-    description = description,
+    id = id?.let { UUID.fromString(it) } ?: UUID.randomUUID(),
+    title = title ?: "Sans titre",
+    description = description ?: "",
     thumbnailUrl = thumbnailUrl,
-    level = FormationLevel.valueOf(level),
-    language = language,
-    organisation = organisation,
-    durationHours = durationHours,
-    price = price,
-    currency = currency,
-    rating = rating,
-    enrollmentCount = enrollmentCount,
-    courseCount = courseCount,
-    tags = tags,
-    isEnrolled = isEnrolled,
-    progressPercent = progressPercent
+    level = runCatching { FormationLevel.valueOf(level ?: "DEBUTANT") }.getOrDefault(FormationLevel.DEBUTANT),
+    language = language ?: "Français",
+    organisation = organisation ?: "Organisation inconnue",
+    durationHours = durationHours ?: 0,
+    price = price ?: 0.0,
+    currency = currency ?: "MAD",
+    rating = rating ?: 0f,
+    enrollmentCount = enrollmentCount ?: 0,
+    courseCount = courseCount ?: 0,
+    tags = tags ?: emptyList(),
+    isEnrolled = isEnrolled ?: false,
+    progressPercent = progressPercent ?: 0
 )
 
 // ─── Course ───────────────────────────────────────────────────────────────────

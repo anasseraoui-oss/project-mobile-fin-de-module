@@ -23,7 +23,7 @@ public interface FormationRepository extends JpaRepository<Formation, UUID> {
            "WHERE f.status = 'PUBLIEE' AND o.status = 'ACTIVE' " +
            "AND (:level IS NULL OR f.level = :level) " +
            "AND (:language IS NULL OR f.language = :language) " +
-           "AND (:search IS NULL OR LOWER(f.title) LIKE LOWER(CONCAT('%', :search, '%')))")
+           "AND (:search IS NULL OR LOWER(f.title) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')))")
     Page<Formation> findByFilters(@Param("level") String level,
                                   @Param("language") String language,
                                   @Param("search") String search,

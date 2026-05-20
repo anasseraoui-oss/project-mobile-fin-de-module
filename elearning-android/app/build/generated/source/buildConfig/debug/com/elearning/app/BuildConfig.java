@@ -10,7 +10,7 @@ public final class BuildConfig {
   public static final int VERSION_CODE = 1;
   public static final String VERSION_NAME = "1.0.0";
   // Field from build type: debug
-  public static final String AUTH_SERVER_URL = "http://192.168.1.103:9000/";
+  public static final String AUTH_SERVER_URL = "http://10.0.2.2:9000/";
   // Field from build type: debug
   public static final Boolean ENABLE_LOGGING = true;
   // Field from default config.
@@ -18,5 +18,5 @@ public final class BuildConfig {
   // Field from default config.
   public static final String GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID";
   // Field from build type: debug
-  public static final String RESOURCE_SERVER_URL = "http://192.168.1.103:8081/";
+  public static final String RESOURCE_SERVER_URL = "http://10.0.2.2:8081/";
 }

@@ -42,22 +42,22 @@ data class UserDto(
 // ─── Formation ────────────────────────────────────────────────────────────────
 
 data class FormationDto(
-    val id: String,
-    val title: String,
-    val description: String,
-    @SerializedName("thumbnail_url")    val thumbnailUrl: String?,
-    val level: String,
-    val language: String,
-    val organisation: String,
-    @SerializedName("duration_hours")   val durationHours: Int,
-    val price: Double,
-    val currency: String,
-    val rating: Float,
-    @SerializedName("enrollment_count") val enrollmentCount: Int,
-    @SerializedName("course_count")     val courseCount: Int,
-    val tags: List<String>,
-    @SerializedName("is_enrolled")      val isEnrolled: Boolean,
-    @SerializedName("progress_percent") val progressPercent: Int
+    val id: String?,
+    val title: String?,
+    val description: String?,
+    @SerializedName("thumbnailKey")     val thumbnailUrl: String?,
+    val level: String?,
+    val language: String?,
+    @SerializedName("organisationName") val organisation: String?,
+    @SerializedName("duration_hours")   val durationHours: Int?,
+    val price: Double?,
+    val currency: String?,
+    val rating: Float?,
+    @SerializedName("enrolledCount")    val enrollmentCount: Int?,
+    @SerializedName("coursesCount")     val courseCount: Int?,
+    val tags: List<String>?,
+    @SerializedName("is_enrolled")      val isEnrolled: Boolean?,
+    @SerializedName("progress_percent") val progressPercent: Int?
 )
 
 // ─── Course ───────────────────────────────────────────────────────────────────
