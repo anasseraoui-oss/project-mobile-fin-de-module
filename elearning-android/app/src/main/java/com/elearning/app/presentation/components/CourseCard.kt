@@ -299,7 +299,7 @@ private val mockSeances = listOf(
         progressSeconds = 600,
         videoKey = null,
         meetingLink = null,
-        scheduledAt = null,
+        scheduledAt = null,9
         isCompleted = true,
         orderIndex = 1
     ),
