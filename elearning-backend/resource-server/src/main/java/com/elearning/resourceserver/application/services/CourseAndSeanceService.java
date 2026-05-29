@@ -5,6 +5,8 @@ import com.elearning.resourceserver.domain.enums.SeanceStatus;
 import com.elearning.resourceserver.domain.enums.SeanceType;
 import com.elearning.resourceserver.domain.dto.CourseRequestDto;
 import com.elearning.resourceserver.domain.dto.CourseResponseDto;
+import com.elearning.resourceserver.domain.dto.ProgressResponseDto;
+import com.elearning.resourceserver.domain.dto.ProgressUpdateRequest;
 import com.elearning.resourceserver.domain.dto.SeanceRequestDto;
 import com.elearning.resourceserver.domain.dto.SeanceResponseDto;
 import com.elearning.resourceserver.exceptions.AccessDeniedException;
@@ -38,6 +40,9 @@ public class CourseAndSeanceService {
     private final SeanceRepository seanceRepository;
     private final InscriptionRepository inscriptionRepository;
     private final ProgressionRepository progressionRepository;
+    private final ProgressRepository progressRepository;
+    private final UserRepository userRepository;
+    private final PedagogicalResourceRepository pedagogicalResourceRepository;
     private final MinioService minioService;
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
@@ -78,6 +83,31 @@ public class CourseAndSeanceService {
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    public List<SeanceResponseDto> getSeancesByCourse(UUID courseId, UUID userId, String role) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvé"));
+
+        UUID formationId = course.getFormation().getId();
+        if ("ROLE_APPRENANT".equals(role) && !inscriptionRepository.existsByApprenantIdAndFormationId(userId, formationId)) {
+            throw new AccessDeniedException("Inscription requise pour accéder à ces séances");
+        }
+
+        return seanceRepository.findByCoursIdOrderByOrderIndex(courseId)
+                .stream()
+                .map(seance -> mapSeanceToDto(seance, userId))
+                .collect(Collectors.toList());
+    }
+
+    public SeanceResponseDto getSeance(UUID seanceId, UUID userId, String role) {
+        Seance seance = seanceRepository.findById(seanceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Séance non trouvée"));
+        UUID formationId = seance.getCourse().getFormation().getId();
+        if ("ROLE_APPRENANT".equals(role) && !inscriptionRepository.existsByApprenantIdAndFormationId(userId, formationId)) {
+            throw new AccessDeniedException("Inscription requise pour accéder à cette séance");
+        }
+        return mapSeanceToDto(seance, userId);
     }
 
     public CourseResponseDto createCourse(CourseRequestDto dto, UUID formateurId) {
@@ -127,11 +157,13 @@ public class CourseAndSeanceService {
             SeanceResponseDto res = new SeanceResponseDto();
             res.setId(saved.getId());
             res.setTitle(saved.getTitle());
+            res.setCourseId(courseId);
             res.setType(saved.getType().name());
             res.setStatus(saved.getStatus().name());
             res.setScheduledAt(saved.getScheduledAt());
             res.setMeetingLink(saved.getMeetingLink());
             res.setOrderIndex(saved.getOrderIndex());
+            res.setDurationSeconds(saved.getDuration());
             return res;
 
         } catch (ValidationException ve) {
@@ -169,9 +201,55 @@ public class CourseAndSeanceService {
         seanceRepository.save(seance);
     }
     
-    public void updateProgress(UUID seanceId, UUID userId, Integer watchedSeconds) {
-        // Simple mock method for compilation
-        log.info("Updating progress for seance {}, user {}, seconds {}", seanceId, userId, watchedSeconds);
+    public ProgressResponseDto updateProgress(UUID seanceId, UUID userId, ProgressUpdateRequest request) {
+        Seance seance = seanceRepository.findById(seanceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Séance non trouvée"));
+
+        UUID formationId = seance.getCourse().getFormation().getId();
+        if (!inscriptionRepository.existsByApprenantIdAndFormationId(userId, formationId)) {
+            throw new AccessDeniedException("Vous n'êtes pas inscrit à cette formation");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
+
+        int incomingSeconds = request.getWatchedSeconds() != null
+                ? request.getWatchedSeconds()
+                : request.getProgressSeconds() != null ? request.getProgressSeconds() : 0;
+        incomingSeconds = Math.max(0, incomingSeconds);
+
+        Progress progress = progressRepository.findByUserIdAndSeanceId(userId, seanceId)
+                .orElseGet(() -> {
+                    Progress created = new Progress();
+                    created.setUser(user);
+                    created.setSeance(seance);
+                    return created;
+                });
+
+        int previousSeconds = progress.getWatchedSeconds() != null ? progress.getWatchedSeconds() : 0;
+        int durationSeconds = seance.getDuration() != null ? seance.getDuration() : 0;
+        int acceptedSeconds = Math.max(previousSeconds, incomingSeconds);
+        if (durationSeconds > 0) {
+            acceptedSeconds = Math.min(acceptedSeconds, durationSeconds);
+        }
+
+        boolean completedByRequest = Boolean.TRUE.equals(request.getCompleted());
+        boolean completedByWatchTime = durationSeconds > 0 && acceptedSeconds >= Math.ceil(durationSeconds * 0.9);
+
+        progress.setWatchedSeconds(acceptedSeconds);
+        progress.setIsCompleted(Boolean.TRUE.equals(progress.getIsCompleted()) || completedByRequest || completedByWatchTime);
+        progress.setLastWatchedAt(LocalDateTime.now());
+        progressRepository.save(progress);
+
+        int courseProgress = recalculateCourseProgress(userId, seance.getCourse().getId());
+
+        ProgressResponseDto response = new ProgressResponseDto();
+        response.setSeanceId(seanceId);
+        response.setWatchedSeconds(progress.getWatchedSeconds());
+        response.setCompleted(progress.getIsCompleted());
+        response.setLastWatchedAt(progress.getLastWatchedAt());
+        response.setCourseProgressPercent(courseProgress);
+        return response;
     }
 
     /**
@@ -255,7 +333,12 @@ public class CourseAndSeanceService {
 
         try {
             String url = minioService.generatePresignedUrl("elearning-media", seance.getVideoKey(), 15);
-            return Map.of("url", url, "expiresInMinutes", "15");
+            return Map.of(
+                    "url", url,
+                    "stream_url", url,
+                    "expiresInMinutes", "15",
+                    "expires_at", LocalDateTime.now().plusMinutes(15).toString()
+            );
         } catch (Exception e) {
             throw new ValidationException("Erreur lors de la génération de l'URL : " + e.getMessage());
         }
@@ -272,9 +355,22 @@ public class CourseAndSeanceService {
 
         // Assume PDF resources are stored alongside video
         try {
-            String url = minioService.generatePresignedUrl("elearning-media",
-                    "seances/" + seanceId + "/resources.pdf", 60);
-            return Map.of("url", url, "expiresInMinutes", "60");
+            String objectKey = seance.getPdfKey();
+            if (objectKey == null) {
+                objectKey = pedagogicalResourceRepository.findBySeanceIdOrderByCreatedAtAsc(seanceId)
+                        .stream()
+                        .filter(resource -> "application/pdf".equals(resource.getMimeType()))
+                        .map(PedagogicalResource::getObjectKey)
+                        .findFirst()
+                        .orElse("seances/" + seanceId + "/resources.pdf");
+            }
+            String url = minioService.generatePresignedUrl("elearning-media", objectKey, 60);
+            return Map.of(
+                    "url", url,
+                    "download_url", url,
+                    "objectKey", objectKey,
+                    "expiresInMinutes", "60"
+            );
         } catch (Exception e) {
             throw new ResourceNotFoundException("Pas de ressource PDF pour cette séance");
         }
@@ -284,5 +380,40 @@ public class CourseAndSeanceService {
         if (filename == null) return ".mp4";
         int dot = filename.lastIndexOf('.');
         return dot >= 0 ? filename.substring(dot) : ".mp4";
+    }
+
+    private SeanceResponseDto mapSeanceToDto(Seance seance, UUID userId) {
+        SeanceResponseDto dto = new SeanceResponseDto();
+        dto.setId(seance.getId());
+        dto.setTitle(seance.getTitle());
+        dto.setDescription(seance.getDescription());
+        dto.setCourseId(seance.getCourse() != null ? seance.getCourse().getId() : seance.getCoursId());
+        dto.setType(seance.getType().name());
+        dto.setVideoKey(seance.getVideoKey());
+        dto.setPdfKey(seance.getPdfKey());
+        dto.setDurationSeconds(seance.getDuration());
+        dto.setMeetingLink(seance.getMeetingLink());
+        dto.setScheduledAt(seance.getScheduledAt());
+        dto.setOrderIndex(seance.getOrderIndex());
+        dto.setStatus(seance.getStatus().name());
+        Progress progress = progressRepository.findByUserIdAndSeanceId(userId, seance.getId()).orElse(null);
+        dto.setIsCompleted(progress != null && Boolean.TRUE.equals(progress.getIsCompleted()));
+        dto.setProgressSeconds(progress != null && progress.getWatchedSeconds() != null ? progress.getWatchedSeconds() : 0);
+        return dto;
+    }
+
+    private int recalculateCourseProgress(UUID userId, UUID courseId) {
+        long totalSeances = seanceRepository.countByCoursId(courseId);
+        if (totalSeances == 0) return 0;
+
+        long completedSeances = progressRepository.countCompletedByUserIdAndCourseId(userId, courseId);
+        int percent = (int) Math.round((completedSeances * 100.0) / totalSeances);
+
+        Progression progression = progressionRepository.findByApprenantIdAndCoursId(userId, courseId).orElse(null);
+        if (progression != null && percent == 100 && progression.getCompletionDate() == null) {
+            progression.setCompletionDate(LocalDateTime.now());
+            progressionRepository.save(progression);
+        }
+        return percent;
     }
 }

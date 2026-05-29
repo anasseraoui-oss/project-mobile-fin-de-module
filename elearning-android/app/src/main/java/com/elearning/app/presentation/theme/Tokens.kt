@@ -21,6 +21,17 @@ object Spacing {
     val huge: Dp = 64.dp
 }
 
+// Figma mobile redesign layout tokens. Use these for new Figma-derived screens
+// while keeping the generic spacing scale available for existing screens.
+object FigmaSpacing {
+    val pageHorizontal: Dp = 24.dp
+    val sectionGap: Dp = 32.dp
+    val cardPadding: Dp = 16.dp
+    val heroPadding: Dp = 24.dp
+    val itemGap: Dp = 12.dp
+    val rowGap: Dp = 16.dp
+}
+
 // ─── Shape Scale ──────────────────────────────────────────────────────────────
 
 val ELearningShapes = Shapes(
@@ -37,7 +48,11 @@ object Radius {
     val sm   = RoundedCornerShape(8.dp)
     val md   = RoundedCornerShape(12.dp)
     val lg   = RoundedCornerShape(16.dp)
+    val item = RoundedCornerShape(14.dp)
+    val panel = RoundedCornerShape(20.dp)
     val xl   = RoundedCornerShape(24.dp)
+    val search = RoundedCornerShape(18.dp)
+    val dialog = RoundedCornerShape(32.dp)
     val full = RoundedCornerShape(50)   // Pill / circle
 }
 

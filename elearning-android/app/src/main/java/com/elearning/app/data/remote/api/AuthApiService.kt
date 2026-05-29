@@ -72,4 +72,12 @@ interface AuthApiService {
      */
     @POST("api/auth/forgot-password")
     suspend fun forgotPassword(@Body email: Map<String, String>): Response<Unit>
+
+    /**
+     * Login with Google SSO token.
+     */
+    @POST("api/v1/auth/google")
+    suspend fun loginWithGoogle(
+        @Body request: com.elearning.app.data.remote.dto.GoogleLoginRequestDto
+    ): Response<TokenResponseDto>
 }

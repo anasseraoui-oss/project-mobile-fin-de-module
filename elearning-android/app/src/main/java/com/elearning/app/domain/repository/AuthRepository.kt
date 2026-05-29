@@ -70,4 +70,9 @@ interface AuthRepository {
      * Request a password-reset email.
      */
     suspend fun forgotPassword(email: String): Result<Unit>
+
+    /**
+     * Login via Google SSO (with ID Token).
+     */
+    suspend fun loginWithGoogle(idToken: String): Result<AuthTokens>
 }

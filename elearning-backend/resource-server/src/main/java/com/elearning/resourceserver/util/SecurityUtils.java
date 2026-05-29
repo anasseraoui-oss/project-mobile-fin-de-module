@@ -16,6 +16,10 @@ public class SecurityUtils {
             throw new IllegalStateException("Utilisateur non authentifié ou token invalide");
         }
         var jwt = (Jwt) auth.getPrincipal();
+        String id = jwt.getClaimAsString("id");
+        if (id != null && !id.isBlank()) {
+            return UUID.fromString(id);
+        }
         return UUID.fromString(jwt.getSubject());
     }
 

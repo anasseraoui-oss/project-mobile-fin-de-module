@@ -303,8 +303,8 @@ private fun formatCount(count: Int): String = when {
 
 // ─── Previews ─────────────────────────────────────────────────────────────────
 
-private val mockFormation = Formation(
-    id = UUID.randomUUID(),
+private val previewFormation = Formation(
+    id = previewUuid("formation-card"),
     title = "Masterclass Architecture Android",
     description = "Clean Architecture avec Jetpack Compose",
     organisation = "Tech Academy",
@@ -321,6 +321,8 @@ private val mockFormation = Formation(
     progressPercent = 45
 )
 
+private fun previewUuid(seed: String): UUID = UUID.nameUUIDFromBytes(seed.toByteArray())
+
 @Preview(showBackground = true, name = "FormationCard Light")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "FormationCard Dark")
 @Composable
@@ -328,7 +330,7 @@ private fun FormationCardPreview() {
     ELearningTheme {
         Box(modifier = Modifier.padding(16.dp)) {
             FormationCard(
-                formation = mockFormation,
+                formation = previewFormation,
                 onClick = {}
             )
         }

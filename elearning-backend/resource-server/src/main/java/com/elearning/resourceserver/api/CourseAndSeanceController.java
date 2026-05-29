@@ -3,6 +3,8 @@ package com.elearning.resourceserver.api;
 import com.elearning.resourceserver.application.services.CourseAndSeanceService;
 import com.elearning.resourceserver.domain.dto.CourseRequestDto;
 import com.elearning.resourceserver.domain.dto.CourseResponseDto;
+import com.elearning.resourceserver.domain.dto.ProgressResponseDto;
+import com.elearning.resourceserver.domain.dto.ProgressUpdateRequest;
 import com.elearning.resourceserver.domain.dto.SeanceResponseDto;
 import com.elearning.resourceserver.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +25,31 @@ public class CourseAndSeanceController {
     private final CourseAndSeanceService courseService;
 
     @GetMapping("/formations/{formationId}/courses")
-    @PreAuthorize("hasAnyRole('APPRENANT', 'FORMATEUR', 'ORGANISATION')")
+    @PreAuthorize("hasAnyRole('APPRENANT', 'FORMATEUR', 'ORGANISATION', 'ADMIN_ORG')")
     public ResponseEntity<List<CourseResponseDto>> getCourses(@PathVariable UUID formationId) {
         return ResponseEntity.ok(courseService.getCoursesByFormation(
             formationId, 
             SecurityUtils.getCurrentUserId(), 
+            SecurityUtils.getCurrentUserRole()
+        ));
+    }
+
+    @GetMapping("/courses/{courseId}/seances")
+    @PreAuthorize("hasAnyRole('APPRENANT', 'FORMATEUR', 'ORGANISATION', 'ADMIN_ORG')")
+    public ResponseEntity<List<SeanceResponseDto>> getSeances(@PathVariable UUID courseId) {
+        return ResponseEntity.ok(courseService.getSeancesByCourse(
+            courseId,
+            SecurityUtils.getCurrentUserId(),
+            SecurityUtils.getCurrentUserRole()
+        ));
+    }
+
+    @GetMapping("/seances/{id}")
+    @PreAuthorize("hasAnyRole('APPRENANT', 'FORMATEUR', 'ORGANISATION', 'ADMIN_ORG')")
+    public ResponseEntity<SeanceResponseDto> getSeance(@PathVariable UUID id) {
+        return ResponseEntity.ok(courseService.getSeance(
+            id,
+            SecurityUtils.getCurrentUserId(),
             SecurityUtils.getCurrentUserRole()
         ));
     }
@@ -53,13 +75,20 @@ public class CourseAndSeanceController {
         return ResponseEntity.ok(courseService.getStreamUrl(id, SecurityUtils.getCurrentUserId()));
     }
 
+    @PatchMapping("/progress/{seanceId}")
+    @PreAuthorize("hasRole('APPRENANT')")
+    public ResponseEntity<ProgressResponseDto> patchProgress(
+            @PathVariable UUID seanceId,
+            @RequestBody ProgressUpdateRequest payload) {
+        return ResponseEntity.ok(courseService.updateProgress(seanceId, SecurityUtils.getCurrentUserId(), payload));
+    }
+
     @PostMapping("/progress/{seanceId}")
     @PreAuthorize("hasRole('APPRENANT')")
-    public ResponseEntity<Void> updateProgress(@PathVariable UUID seanceId, @RequestBody Map<String, Integer> payload) {
-        Integer watchedSeconds = payload.get("watchedSeconds");
-        if (watchedSeconds == null) watchedSeconds = 0;
-        courseService.updateProgress(seanceId, SecurityUtils.getCurrentUserId(), watchedSeconds);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ProgressResponseDto> updateProgress(
+            @PathVariable UUID seanceId,
+            @RequestBody ProgressUpdateRequest payload) {
+        return ResponseEntity.ok(courseService.updateProgress(seanceId, SecurityUtils.getCurrentUserId(), payload));
     }
 
     @PostMapping("/seances/{id}/start")

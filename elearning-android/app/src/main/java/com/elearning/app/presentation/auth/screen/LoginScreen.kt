@@ -1,6 +1,10 @@
 package com.elearning.app.presentation.auth.screen
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -19,6 +23,7 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
@@ -50,6 +55,14 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+
+    val googleSignInLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            authViewModel.handleGoogleSignInResult(result.data)
+        }
+    }
 
     // Show error in Snackbar
     LaunchedEffect(uiState.error) {
@@ -247,7 +260,7 @@ fun LoginScreen(
                         ) {
                             // Google
                             OutlinedButton(
-                                onClick = { authViewModel.loginWithGoogle() },
+                                onClick = { googleSignInLauncher.launch(authViewModel.googleSignInIntent) },
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(48.dp),

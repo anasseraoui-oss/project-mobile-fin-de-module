@@ -80,7 +80,7 @@ class QuizViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.value = QuizState.Submitting
             try {
-                val result = repository.submitAnswers(quizId, _answers.value)
+                val result = repository.submitAnswers(currentState.quiz.id, _answers.value)
                 _uiState.value = QuizState.Result(currentState.quiz.title, result)
             } catch (e: Exception) {
                 _uiState.value = QuizState.Error("Erreur de soumission : ${e.localizedMessage}")

@@ -1,2 +1,15 @@
 
 local.properties
+
+# Android/Gradle generated files
+.gradle/
+build/
+*/build/
+
+# IDE/local machine files
+.idea/
+*.iml
+
+# Generated APK/AAB artifacts
+*.apk
+*.aab

@@ -2,9 +2,23 @@ package com.elearning.app.data.remote.api
 
 import com.elearning.app.data.remote.dto.FormationDto
 import com.elearning.app.data.remote.dto.PagedResponse
+import com.elearning.app.data.remote.dto.BackendQuizResultDto
+import com.elearning.app.data.remote.dto.CourseDto
+import com.elearning.app.data.remote.dto.CourseQuizDto
+import com.elearning.app.data.remote.dto.DownloadUrlDto
+import com.elearning.app.data.remote.dto.PedagogicalResourceDto
+import com.elearning.app.data.remote.dto.CoverUrlDto
+import com.elearning.app.data.remote.dto.ProgressUpdateDto
+import com.elearning.app.data.remote.dto.QuizSubmitRequestDto
+import com.elearning.app.data.remote.dto.SeanceDto
+import com.elearning.app.data.remote.dto.StreamUrlDto
 import com.elearning.app.data.remote.dto.UserDto
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.PATCH
+import retrofit2.http.POST
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ResourceApiService {
@@ -18,4 +32,52 @@ interface ResourceApiService {
 
     @GET("api/v1/auth/me")
     suspend fun getCurrentUser(): Response<UserDto>
+
+    @GET("api/v1/formations/{id}")
+    suspend fun getFormation(@Path("id") id: String): FormationDto
+
+    @GET("api/v1/formations/{id}/cover-url")
+    suspend fun getFormationCoverUrl(@Path("id") id: String): CoverUrlDto
+
+    @GET("api/v1/formations/{formationId}/courses")
+    suspend fun getCourses(@Path("formationId") formationId: String): List<CourseDto>
+
+    @GET("api/v1/courses/{courseId}/seances")
+    suspend fun getSeances(@Path("courseId") courseId: String): List<SeanceDto>
+
+    @GET("api/v1/seances/{id}")
+    suspend fun getSeance(@Path("id") id: String): SeanceDto
+
+    @GET("api/v1/seances/{id}/stream-url")
+    suspend fun getStreamUrl(@Path("id") id: String): StreamUrlDto
+
+    @GET("api/v1/seances/{id}/pdf-url")
+    suspend fun getPdfUrl(@Path("id") id: String): DownloadUrlDto
+
+    @GET("api/v1/seances/{seanceId}/resources")
+    suspend fun getSeanceResources(@Path("seanceId") seanceId: String): List<PedagogicalResourceDto>
+
+    @GET("api/v1/resources/{id}/download-url")
+    suspend fun getResourceDownloadUrl(@Path("id") id: String): DownloadUrlDto
+
+    @PATCH("api/v1/progress/{seanceId}")
+    suspend fun updateProgress(
+        @Path("seanceId") seanceId: String,
+        @Body body: ProgressUpdateDto
+    )
+
+    @GET("api/v1/courses/{courseId}/quiz")
+    suspend fun getCourseQuiz(@Path("courseId") courseId: String): CourseQuizDto
+
+    @POST("api/v1/quizzes/{quizId}/start")
+    suspend fun startQuiz(@Path("quizId") quizId: String): Response<Map<String, String>>
+
+    @POST("api/v1/quizzes/{quizId}/submit")
+    suspend fun submitQuiz(
+        @Path("quizId") quizId: String,
+        @Body body: QuizSubmitRequestDto
+    ): BackendQuizResultDto
+
+    @POST("api/v1/formations/{id}/enroll")
+    suspend fun enrollInFormation(@Path("id") id: String): Response<Unit>
 }

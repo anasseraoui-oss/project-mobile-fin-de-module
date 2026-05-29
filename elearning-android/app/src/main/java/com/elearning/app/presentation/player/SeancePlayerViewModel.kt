@@ -3,6 +3,8 @@ package com.elearning.app.presentation.player
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.elearning.app.domain.model.PedagogicalResource
+import com.elearning.app.domain.model.Seance
 import com.elearning.app.domain.repository.SeanceRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,9 +39,12 @@ class SeancePlayerViewModel @Inject constructor(
                 
                 // 3. Get remote presigned URL if no local cache
                 val streamUrl = localPath ?: repository.getStreamUrl(seanceId)
+                val resources = runCatching { repository.getResources(seanceId) }.getOrDefault(emptyList())
 
                 _uiState.value = SeancePlayerState.Ready(
+                    seance = seance,
                     streamUrl = streamUrl,
+                    resources = resources,
                     lastProgressMs = seance.progressSeconds * 1000L
                 )
             } catch (e: Exception) {
@@ -58,10 +63,26 @@ class SeancePlayerViewModel @Inject constructor(
             }
         }
     }
+
+    fun resolveResourceUrl(resource: PedagogicalResource, onResolved: (String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val url = resource.fileUrl ?: repository.getResourceDownloadUrl(resource.id.toString())
+                onResolved(url)
+            } catch (_: Exception) {
+                // Download errors should not interrupt video playback.
+            }
+        }
+    }
 }
 
 sealed class SeancePlayerState {
     object Loading : SeancePlayerState()
-    data class Ready(val streamUrl: String, val lastProgressMs: Long) : SeancePlayerState()
+    data class Ready(
+        val seance: Seance,
+        val streamUrl: String,
+        val resources: List<PedagogicalResource>,
+        val lastProgressMs: Long
+    ) : SeancePlayerState()
     data class Error(val message: String) : SeancePlayerState()
 }

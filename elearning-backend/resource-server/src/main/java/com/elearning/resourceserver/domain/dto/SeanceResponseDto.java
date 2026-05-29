@@ -8,10 +8,12 @@ import java.util.UUID;
 public class SeanceResponseDto {
     private UUID id;
     private String title;
+    private String description;
     private UUID courseId;
     private String type;
     private String videoKey;
     private String pdfKey;
+    private String thumbnailUrl;
     private Integer durationSeconds;
     private String meetingLink;
     private LocalDateTime scheduledAt;
@@ -20,5 +22,6 @@ public class SeanceResponseDto {
     
     private String streamUrlExpiry;
     private Boolean isCompleted;
+    private Integer progressSeconds;
     private String status;
 }

@@ -266,6 +266,25 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
+    // ──────────────────────────── GOOGLE SSO ─────────────────────────────────
+
+    override suspend fun loginWithGoogle(idToken: String): Result<AuthTokens> {
+        return try {
+            val response = authApiService.loginWithGoogle(
+                com.elearning.app.data.remote.dto.GoogleLoginRequestDto(idToken = idToken)
+            )
+            if (response.isSuccessful && response.body() != null) {
+                val tokens = response.body()!!.toDomain()
+                tokenManager.saveTokens(tokens.accessToken, tokens.refreshToken)
+                Result.Success(tokens)
+            } else {
+                Result.Error(Exception("Google login failed: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.Error(e, e.message)
+        }
+    }
+
     // ──────────────────────────── PKCE UTILS ─────────────────────────────────
 
     private fun generatePkcePair(): Pair<String, String> {

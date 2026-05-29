@@ -1,14 +1,18 @@
 package com.elearning.app.presentation.auth
 
+import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.elearning.app.core.auth.GoogleAuthManager
 import com.elearning.app.data.repository.PkceStore
 import com.elearning.app.domain.model.AuthState
 import com.elearning.app.domain.model.Result
 import com.elearning.app.domain.model.User
 import com.elearning.app.domain.usecase.auth.*
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import net.openid.appauth.AuthorizationException
@@ -45,6 +49,7 @@ sealed class AuthEvent {
  */
 @HiltViewModel
 class AuthViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val loginClassicUseCase: LoginClassicUseCase,
     private val logoutUseCase: LogoutUseCase,
     private val registerUseCase: RegisterUseCase,
@@ -55,6 +60,11 @@ class AuthViewModel @Inject constructor(
     private val authRepository: com.elearning.app.domain.repository.AuthRepository,
     private val authorizationService: AuthorizationService
 ) : ViewModel() {
+
+    private val googleAuthManager = GoogleAuthManager(context)
+
+    val googleSignInIntent: Intent
+        get() = googleAuthManager.getSignInIntent()
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
@@ -72,19 +82,26 @@ class AuthViewModel @Inject constructor(
      * Observes the persisted auth state on startup and routes accordingly.
      */
     fun checkAuthState() {
+        Log.d("AuthViewModel", "Checking auth state...")
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             checkAuthStateUseCase()
                 .onEach { state ->
+                    Log.d("AuthViewModel", "Auth state changed: $state")
                     _uiState.update { it.copy(authState = state, isLoading = false) }
                     when (state) {
                         AuthState.Authenticated -> {
+                            Log.d("AuthViewModel", "User authenticated, fetching profile...")
                             fetchCurrentUser()
                             _events.emit(AuthEvent.NavigateToHome)
                         }
-                        AuthState.Unauthenticated ->
+                        AuthState.Unauthenticated -> {
+                            Log.d("AuthViewModel", "User unauthenticated, navigating to login")
                             _events.emit(AuthEvent.NavigateToLogin)
-                        AuthState.Loading -> Unit
+                        }
+                        AuthState.Loading -> {
+                            Log.d("AuthViewModel", "Auth state is Loading...")
+                        }
                     }
                 }
                 .launchIn(viewModelScope)
@@ -175,6 +192,32 @@ class AuthViewModel @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    fun handleGoogleSignInResult(data: Intent?) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            googleAuthManager.handleSignInResult(data)
+                .onSuccess { idToken ->
+                    when (val result = authRepository.loginWithGoogle(idToken)) {
+                        is Result.Success -> {
+                            fetchCurrentUser()
+                            _events.emit(AuthEvent.NavigateToHome)
+                        }
+                        is Result.Error -> {
+                            val msg = result.message ?: "Erreur Google"
+                            _uiState.update { it.copy(isLoading = false, error = msg) }
+                            _events.emit(AuthEvent.ShowError(msg))
+                        }
+                        Result.Loading -> Unit
+                    }
+                }
+                .onFailure { error ->
+                    val msg = error.message ?: "Google Sign-In annulé"
+                    _uiState.update { it.copy(isLoading = false, error = msg) }
+                    _events.emit(AuthEvent.ShowError(msg))
+                }
         }
     }
 

@@ -3,6 +3,7 @@ package com.elearning.app.data.remote.paging
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.elearning.app.data.remote.api.ResourceApiService
+import com.elearning.app.data.remote.dto.FormationDto
 import com.elearning.app.data.remote.mapper.toDomain
 import com.elearning.app.domain.model.Formation
 import com.elearning.app.domain.model.FormationLevel
@@ -25,7 +26,7 @@ class FormationPagingSource(
                 level = level?.name
             )
             
-            val formations = response.content.map { it.toDomain() }
+            val formations = response.content.orEmpty().map { it.toDomainWithCoverUrl() }
             
             LoadResult.Page(
                 data = formations,
@@ -44,5 +45,15 @@ class FormationPagingSource(
             state.closestPageToPosition(anchorPosition)?.prevKey?.plus(1)
                 ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
         }
+    }
+
+    private suspend fun FormationDto.toDomainWithCoverUrl(): Formation {
+        val formation = toDomain()
+        if (!formation.thumbnailUrl.isNullOrBlank()) return formation
+
+        val coverUrl = id?.let { formationId ->
+            runCatching { api.getFormationCoverUrl(formationId).url }.getOrNull()
+        }
+        return formation.copy(thumbnailUrl = coverUrl)
     }
 }

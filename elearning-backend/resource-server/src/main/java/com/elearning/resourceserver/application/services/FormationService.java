@@ -50,6 +50,9 @@ public class FormationService {
     @Value("${minio.bucket-public}")
     private String bucketPublic;
 
+    @Value("${minio.bucket-media:elearning-media}")
+    private String bucketMedia;
+
     public Page<FormationResponseDto> searchFormations(String level, String language, String search, Pageable pageable) {
         return formationRepository.findByFilters(level, language, search, pageable)
                 .map(this::mapToResponseDto);
@@ -59,6 +62,38 @@ public class FormationService {
         Formation formation = formationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Formation non trouvée"));
         return mapToResponseDto(formation);
+    }
+
+    public Map<String, String> getFormationCoverUrl(UUID id) {
+        Formation formation = formationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Formation non trouvÃ©e"));
+
+        String objectKey = formation.getCoverImageKey();
+        if (objectKey == null || objectKey.isBlank()) {
+            throw new ResourceNotFoundException("Image de couverture non trouvÃ©e");
+        }
+
+        try {
+            boolean inPublicBucket = minioService.objectExists(bucketPublic, objectKey);
+            boolean inMediaBucket = !inPublicBucket && minioService.objectExists(bucketMedia, objectKey);
+            if (!inPublicBucket && !inMediaBucket) {
+                throw new ResourceNotFoundException("Image de couverture non disponible dans MinIO");
+            }
+
+            String bucket = inPublicBucket ? bucketPublic : bucketMedia;
+            String url = minioService.generatePresignedUrl(bucket, objectKey, 60);
+            return Map.of(
+                    "url", url,
+                    "cover_url", url,
+                    "object_key", objectKey,
+                    "bucket", bucket,
+                    "expiresInMinutes", "60"
+            );
+        } catch (ResourceNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ValidationException("Erreur lors de la gÃ©nÃ©ration de l'URL de couverture : " + e.getMessage());
+        }
     }
 
     /**
@@ -249,7 +284,35 @@ public class FormationService {
         dto.setOrganisationId(formation.getOrganisationId());
         dto.setFormateurId(formation.getFormateurId());
         dto.setCoverImageKey(formation.getCoverImageKey());
+        dto.setThumbnailKey(formation.getCoverImageKey());
+        dto.setCoverImageUrl(generateMediaUrl(formation.getCoverImageKey(), 60));
+        dto.setThumbnailUrl(dto.getCoverImageUrl());
+        dto.setTotalDuration(formation.getTotalDuration());
+        dto.setDurationHours(toDurationHours(formation.getTotalDuration()));
+        dto.setIsPublished(formation.isPublished());
+        dto.setCoursesCount(courseRepository.findByFormationIdOrderByOrderIndex(formation.getId()).size());
+        dto.setEnrolledCount((int) inscriptionRepository.countByFormationId(formation.getId()));
         return dto;
+    }
+
+    private String generateMediaUrl(String objectKey, int expiryMinutes) {
+        if (objectKey == null || objectKey.isBlank()) {
+            return null;
+        }
+        try {
+            String bucket = minioService.objectExists(bucketPublic, objectKey) ? bucketPublic : bucketMedia;
+            return minioService.generatePresignedUrl(bucket, objectKey, expiryMinutes);
+        } catch (Exception e) {
+            log.warn("Could not generate media URL for key {}: {}", objectKey, e.getMessage());
+            return null;
+        }
+    }
+
+    private Integer toDurationHours(Integer totalDurationMinutes) {
+        if (totalDurationMinutes == null || totalDurationMinutes <= 0) {
+            return 0;
+        }
+        return Math.max(1, (int) Math.ceil(totalDurationMinutes / 60.0));
     }
 
     private String slugify(String input) {

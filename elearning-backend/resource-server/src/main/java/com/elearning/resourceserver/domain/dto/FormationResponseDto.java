@@ -12,9 +12,14 @@ public class FormationResponseDto {
     private String slug;
     private String description;
     private String thumbnailKey;
+    private String thumbnailUrl;
     private String coverImageKey;
+    private String coverImageUrl;
+    private String previewVideoUrl;
     private String level;
     private String language;
+    private Integer totalDuration;
+    private Integer durationHours;
     private Double price;
     private Boolean isPublished;
     private String status;

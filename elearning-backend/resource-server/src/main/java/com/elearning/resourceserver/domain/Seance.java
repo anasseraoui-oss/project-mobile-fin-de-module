@@ -58,6 +58,8 @@ public class Seance {
 
     private String videoKey;
 
+    private String pdfKey;
+
     private Integer orderIndex;
 
     @Column(updatable = false)

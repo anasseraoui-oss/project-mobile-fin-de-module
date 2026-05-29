@@ -82,10 +82,24 @@ data class Seance(
     val orderIndex: Int,
     val status: SeanceStatus,
     val videoKey: String?,
-    val meetingLink: String?,
-    val scheduledAt: String?,
+    val pdfKey: String? = null,
+    val thumbnailUrl: String? = null,
+    val meetingLink: String? = null,
+    val scheduledAt: String? = null,
     val isCompleted: Boolean = false,
     val progressSeconds: Int = 0
+)
+
+data class PedagogicalResource(
+    val id: UUID,
+    val seanceId: UUID?,
+    val title: String,
+    val fileName: String,
+    val objectKey: String?,
+    val fileUrl: String?,
+    val mimeType: String,
+    val sizeBytes: Long,
+    val isDownloadable: Boolean
 )
 
 enum class SeanceType { VIDEO, LIVE, DOCUMENT, QUIZ }

@@ -1,11 +1,15 @@
 # Build stage
+# syntax=docker/dockerfile:1.7
 FROM maven:3.9.6-eclipse-temurin-17-alpine AS build
 WORKDIR /app
-COPY pom.xml .
-COPY auth-server/pom.xml auth-server/
-COPY resource-server/pom.xml resource-server/
-COPY resource-server/src resource-server/src
-RUN --mount=type=cache,target=/root/.m2 mvn package -DskipTests -pl resource-server
+
+# Copy parent pom and all module poms
+COPY . .
+
+# Build resource-server with explicit annotation processor configuration
+RUN --mount=type=cache,target=/root/.m2 mvn clean package -DskipTests \
+    -pl resource-server \
+    -Dorg.slf4j.simpleLogger.defaultLogLevel=info
 
 # Run stage
 FROM eclipse-temurin:17-jre-alpine

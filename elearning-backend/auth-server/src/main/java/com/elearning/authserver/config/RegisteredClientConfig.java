@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
@@ -19,11 +20,12 @@ import org.springframework.security.oauth2.server.authorization.settings.OAuth2T
 public class RegisteredClientConfig {
 
     @Bean
-    public RegisteredClientRepository registeredClientRepository() {
+    public RegisteredClientRepository registeredClientRepository(PasswordEncoder passwordEncoder) {
         RegisteredClient androidElearningApp = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("elearning-mobile-client")
                 // Pour le password grant, le client doit s'authentifier via client_secret dans le body
-                .clientSecret("{noop}elearning-mobile-secret")
+                .clientSecret(passwordEncoder.encode("elearning-mobile-secret"))
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
                 .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
                 .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)

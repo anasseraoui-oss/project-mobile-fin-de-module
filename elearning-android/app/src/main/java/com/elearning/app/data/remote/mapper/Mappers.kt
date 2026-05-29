@@ -2,6 +2,7 @@ package com.elearning.app.data.remote.mapper
 
 import com.elearning.app.data.remote.dto.*
 import com.elearning.app.domain.model.*
+import kotlin.math.ceil
 import java.util.UUID
 
 // ─── Auth Tokens ─────────────────────────────────────────────────────────────
@@ -29,14 +30,14 @@ fun UserDto.toDomain() = User(
 // ─── Formation ────────────────────────────────────────────────────────────────
 
 fun FormationDto.toDomain() = Formation(
-    id = id?.let { UUID.fromString(it) } ?: UUID.randomUUID(),
+    id = UUID.fromString(requireNotNull(id) { "Formation id is missing from backend response" }),
     title = title ?: "Sans titre",
     description = description ?: "",
-    thumbnailUrl = thumbnailUrl,
+    thumbnailUrl = coverImageUrl ?: thumbnailUrl,
     level = runCatching { FormationLevel.valueOf(level ?: "DEBUTANT") }.getOrDefault(FormationLevel.DEBUTANT),
     language = language ?: "Français",
     organisation = organisation ?: "Organisation inconnue",
-    durationHours = durationHours ?: 0,
+    durationHours = durationHours ?: totalDuration.toHours(),
     price = price ?: 0.0,
     currency = currency ?: "MAD",
     rating = rating ?: 0f,
@@ -55,7 +56,7 @@ fun CourseDto.toDomain() = Course(
     title = title,
     description = description,
     orderIndex = orderIndex,
-    seances = seances.map { it.toDomain() }
+    seances = seances.orEmpty().map { it.toDomain() }
 )
 
 // ─── Seance ───────────────────────────────────────────────────────────────────
@@ -65,16 +66,41 @@ fun SeanceDto.toDomain() = Seance(
     courseId = UUID.fromString(courseId),
     title = title,
     description = description,
-    type = SeanceType.valueOf(type),
-    durationSeconds = durationSeconds,
-    orderIndex = orderIndex,
-    status = SeanceStatus.valueOf(status),
+    type = when (type) {
+        "ENREGISTREE" -> SeanceType.VIDEO
+        else -> runCatching { SeanceType.valueOf(type) }.getOrDefault(SeanceType.VIDEO)
+    },
+    durationSeconds = durationSeconds ?: 0,
+    orderIndex = orderIndex ?: 0,
+    status = when (status) {
+        "CONTENU_DISPONIBLE" -> SeanceStatus.TERMINEE
+        else -> runCatching { SeanceStatus.valueOf(status ?: "PLANIFIEE") }.getOrDefault(SeanceStatus.PLANIFIEE)
+    },
     videoKey = videoKey,
+    pdfKey = pdfKey,
+    thumbnailUrl = thumbnailUrl,
     meetingLink = meetingLink,
     scheduledAt = scheduledAt,
-    isCompleted = isCompleted,
-    progressSeconds = progressSeconds
+    isCompleted = isCompleted ?: false,
+    progressSeconds = progressSeconds ?: 0
 )
+
+fun PedagogicalResourceDto.toDomain() = PedagogicalResource(
+    id = UUID.fromString(id),
+    seanceId = seanceId?.let { runCatching { UUID.fromString(it) }.getOrNull() },
+    title = title ?: fileName ?: "Fichier",
+    fileName = fileName ?: title ?: objectKey?.substringAfterLast('/') ?: "fichier",
+    objectKey = objectKey,
+    fileUrl = fileUrl,
+    mimeType = mimeType ?: "application/octet-stream",
+    sizeBytes = sizeBytes ?: 0L,
+    isDownloadable = isDownloadable ?: true
+)
+
+private fun Int?.toHours(): Int {
+    if (this == null || this <= 0) return 0
+    return maxOf(1, ceil(this / 60.0).toInt())
+}
 
 // ─── Quiz ─────────────────────────────────────────────────────────────────────
 
@@ -86,7 +112,7 @@ fun QuizDto.toDomain() = Quiz(
     durationMinutes = durationMinutes,
     maxAttempts = maxAttempts,
     passingScore = passingScore,
-    questions = questions.map { it.toDomain() }
+    questions = questions.orEmpty().map { it.toDomain() }
 )
 
 fun QuestionDto.toDomain() = Question(
@@ -95,7 +121,7 @@ fun QuestionDto.toDomain() = Question(
     text = text,
     type = QuestionType.valueOf(type),
     points = points,
-    options = options.map { it.toDomain() }
+    options = options.orEmpty().map { it.toDomain() }
 )
 
 fun QuestionOptionDto.toDomain() = QuestionOption(
@@ -112,13 +138,13 @@ fun QuizResultDto.toDomain() = QuizResult(
     maxScore = maxScore,
     isPassed = isPassed,
     durationSeconds = durationSeconds,
-    answers = answers.map { it.toDomain() },
+    answers = answers.orEmpty().map { it.toDomain() },
     certificateUrl = certificateUrl
 )
 
 fun AnswerResultDto.toDomain() = AnswerResult(
     questionId = UUID.fromString(questionId),
-    selectedOptionIds = selectedOptionIds.map { UUID.fromString(it) },
+    selectedOptionIds = selectedOptionIds.orEmpty().map { UUID.fromString(it) },
     openAnswer = openAnswer,
     isCorrect = isCorrect,
     pointsEarned = pointsEarned

@@ -27,10 +27,10 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         // Keep splash screen until the auth state is no longer Loading
         val splashScreen = installSplashScreen()
-        splashScreen.setKeepOnScreenCondition {
-            authViewModel.uiState.value.authState ==
-                    com.elearning.app.domain.model.AuthState.Loading
-        }
+        // splashScreen.setKeepOnScreenCondition {
+        //     authViewModel.uiState.value.authState ==
+        //             com.elearning.app.domain.model.AuthState.Loading
+        // }
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

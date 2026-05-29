@@ -287,10 +287,10 @@ private fun SeanceType.iconColor(): Color = when (this) {
 
 // ─── Previews ─────────────────────────────────────────────────────────────────
 
-private val mockSeances = listOf(
+private val previewSeances = listOf(
     Seance(
-        id = UUID.randomUUID(),
-        courseId = UUID.randomUUID(),
+        id = previewUuid("course-card-seance-1"),
+        courseId = previewUuid("course-card"),
         title = "Introduction à Jetpack Compose",
         description = null,
         type = SeanceType.VIDEO,
@@ -299,13 +299,13 @@ private val mockSeances = listOf(
         progressSeconds = 600,
         videoKey = null,
         meetingLink = null,
-        scheduledAt = null,9
+        scheduledAt = null,
         isCompleted = true,
         orderIndex = 1
     ),
     Seance(
-        id = UUID.randomUUID(),
-        courseId = UUID.randomUUID(),
+        id = previewUuid("course-card-seance-2"),
+        courseId = previewUuid("course-card"),
         title = "State Hoisting et Data Flow",
         description = null,
         type = SeanceType.VIDEO,
@@ -319,8 +319,8 @@ private val mockSeances = listOf(
         orderIndex = 2
     ),
     Seance(
-        id = UUID.randomUUID(),
-        courseId = UUID.randomUUID(),
+        id = previewUuid("course-card-seance-3"),
+        courseId = previewUuid("course-card"),
         title = "Quiz d'évaluation",
         description = null,
         type = SeanceType.QUIZ,
@@ -335,6 +335,8 @@ private val mockSeances = listOf(
     )
 )
 
+private fun previewUuid(seed: String): UUID = UUID.nameUUIDFromBytes(seed.toByteArray())
+
 @Preview(showBackground = true, name = "CourseCard Light")
 @Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES, name = "CourseCard Dark")
 @Composable
@@ -344,7 +346,7 @@ private fun CourseCardPreview() {
             CourseCard(
                 courseTitle = "Module 1 : Les bases",
                 courseIndex = 0,
-                seances = mockSeances,
+                seances = previewSeances,
                 initiallyExpanded = true,
                 onSeanceClick = {}
             )

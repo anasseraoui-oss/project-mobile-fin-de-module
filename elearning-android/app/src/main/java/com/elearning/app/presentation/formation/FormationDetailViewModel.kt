@@ -36,6 +36,7 @@ class FormationDetailViewModel @Inject constructor(
             try {
                 val formation = repository.getFormationById(formationId)
                 val courses = repository.getCoursesForFormation(formationId)
+                
                 _uiState.value = FormationDetailState.Success(formation, courses)
             } catch (e: Exception) {
                 _uiState.value = FormationDetailState.Error(e.localizedMessage ?: "Erreur réseau inconnue")
@@ -60,6 +61,9 @@ class FormationDetailViewModel @Inject constructor(
 
 sealed class FormationDetailState {
     object Loading : FormationDetailState()
-    data class Success(val formation: Formation, val courses: List<Course>) : FormationDetailState()
+    data class Success(
+        val formation: Formation,
+        val courses: List<Course>
+    ) : FormationDetailState()
     data class Error(val message: String) : FormationDetailState()
 }

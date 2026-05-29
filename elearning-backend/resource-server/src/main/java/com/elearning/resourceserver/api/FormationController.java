@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -33,6 +34,11 @@ public class FormationController {
     @GetMapping("/{id}")
     public ResponseEntity<FormationResponseDto> getFormation(@PathVariable UUID id) {
         return ResponseEntity.ok(formationService.getFormationDetails(id));
+    }
+
+    @GetMapping("/{id}/cover-url")
+    public ResponseEntity<Map<String, String>> getFormationCoverUrl(@PathVariable UUID id) {
+        return ResponseEntity.ok(formationService.getFormationCoverUrl(id));
     }
 
     @PostMapping

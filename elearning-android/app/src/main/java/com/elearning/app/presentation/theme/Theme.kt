@@ -19,6 +19,17 @@ import androidx.compose.ui.unit.sp
 // ─── Brand Color Palette ──────────────────────────────────────────────────────
 
 object ELearningColors {
+    // Figma-aligned tokens for the mobile redesign. Keep the legacy Material
+    // palette below until existing screens are migrated.
+    val BrandBlue         = Color(0xFF2954C8)
+    val BrandBlueDark     = Color(0xFF1E3A8A)
+    val AppBackground     = Color(0xFFFAFAFC)
+    val CardSurface       = Color(0xFFFFFFFF)
+    val TextPrimary       = Color(0xFF111827)
+    val TextSecondary     = Color(0xFF4B5563)
+    val TextTertiary      = Color(0xFF6B7280)
+    val BorderSubtle      = Color(0xFFF3F4F6)
+
     // Primary — Rich Indigo
     val Primary            = Color(0xFF4F46E5)
     val PrimaryContainer   = Color(0xFFE0E7FF)
@@ -167,5 +178,45 @@ private fun ThemePreview() {
                 Text("Success Extended", color = ELearningTheme.extended.success, style = MaterialTheme.typography.bodyLarge)
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Figma Tokens")
+@Composable
+private fun FigmaTokensPreview() {
+    ELearningTheme {
+        Surface(color = ELearningColors.AppBackground) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(FigmaSpacing.itemGap)
+            ) {
+                Text(
+                    text = "Figma mobile tokens",
+                    color = ELearningColors.TextPrimary,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                )
+                FigmaColorSwatch("BrandBlue", ELearningColors.BrandBlue)
+                FigmaColorSwatch("BrandBlueDark", ELearningColors.BrandBlueDark)
+                FigmaColorSwatch("AppBackground", ELearningColors.AppBackground)
+                FigmaColorSwatch("CardSurface", ELearningColors.CardSurface)
+                FigmaColorSwatch("BorderSubtle", ELearningColors.BorderSubtle)
+            }
+        }
+    }
+}
+
+@Composable
+private fun FigmaColorSwatch(name: String, color: Color) {
+    Row(horizontalArrangement = Arrangement.spacedBy(Spacing.md)) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .background(color = color, shape = Radius.md)
+        )
+        Text(
+            text = name,
+            color = ELearningColors.TextSecondary,
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }

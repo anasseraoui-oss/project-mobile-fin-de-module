@@ -9,6 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
@@ -20,6 +21,7 @@ import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2AccessTokenAuthenticationToken;
 import org.springframework.security.oauth2.server.authorization.authentication.OAuth2ClientAuthenticationToken;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.context.AuthorizationServerContextHolder;
 import org.springframework.security.oauth2.server.authorization.token.DefaultOAuth2TokenContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenContext;
@@ -30,13 +32,16 @@ public class CustomPasswordAuthenticationProvider implements AuthenticationProvi
     private final AuthenticationManager authenticationManager;
     private final OAuth2AuthorizationService authorizationService;
     private final OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator;
+    private final RegisteredClientRepository registeredClientRepository;
 
     public CustomPasswordAuthenticationProvider(AuthenticationManager authenticationManager,
             OAuth2AuthorizationService authorizationService,
-            OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator) {
+            OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator,
+            RegisteredClientRepository registeredClientRepository) {
         this.authenticationManager = authenticationManager;
         this.authorizationService = authorizationService;
         this.tokenGenerator = tokenGenerator;
+        this.registeredClientRepository = registeredClientRepository;
     }
 
     @Override
@@ -121,6 +126,19 @@ public class CustomPasswordAuthenticationProvider implements AuthenticationProvi
         }
         if (clientPrincipal != null && clientPrincipal.isAuthenticated()) {
             return clientPrincipal;
+        }
+        if (authentication instanceof CustomPasswordAuthenticationToken passwordAuthentication) {
+            Object clientId = passwordAuthentication.getAdditionalParameters().get("client_id");
+            if (clientId instanceof String clientIdValue && !clientIdValue.isBlank()) {
+                RegisteredClient registeredClient = registeredClientRepository.findByClientId(clientIdValue);
+                if (registeredClient != null && registeredClient.getClientAuthenticationMethods().contains(ClientAuthenticationMethod.NONE)) {
+                    return new OAuth2ClientAuthenticationToken(
+                            registeredClient,
+                            ClientAuthenticationMethod.NONE,
+                            null
+                    );
+                }
+            }
         }
         throw new org.springframework.security.oauth2.core.OAuth2AuthenticationException(OAuth2ErrorCodes.INVALID_CLIENT);
     }

@@ -27,25 +27,8 @@ object Routes {
     const val REGISTER = "register"
     const val FORGOT_PASSWORD = "forgot_password"
 
-    // App Graph (main content)
-    const val HOME = "home"
-    const val CATALOGUE = "catalogue"
-    const val FORMATION_DETAIL = "formation/{formationId}"
-    const val COURSE_PLAYER = "player/{seanceId}"
-    const val QUIZ = "quiz/{quizId}"
-    const val PROFILE = "profile"
-    const val NOTIFICATIONS = "notifications"
-
-    // Admin Graph
-    const val ADMIN_DASHBOARD = "admin/dashboard"
-    const val QR_GENERATOR = "admin/qr/{seanceId}"
-    const val QR_SCANNER = "qr_scanner"
-
-    // Helpers
-    fun formationDetail(id: String) = "formation/$id"
-    fun coursePlayer(seanceId: String) = "player/$seanceId"
-    fun quiz(quizId: String) = "quiz/$quizId"
-    fun qrGenerator(seanceId: String) = "admin/qr/$seanceId"
+    // Root destination that hosts the authenticated app graph.
+    const val APP = "app"
 }
 
 // ─── Root NavGraph ────────────────────────────────────────────────────────────
@@ -66,7 +49,7 @@ fun ELearningNavGraph(
         authViewModel.events.collect { event ->
             when (event) {
                 AuthEvent.NavigateToHome -> {
-                    navController.navigate(Routes.HOME) {
+                    navController.navigate(Routes.APP) {
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 }
@@ -112,7 +95,7 @@ fun ELearningNavGraph(
 
         // ── App Graph ───────────────────
         @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
-        composable(Routes.HOME) {
+        composable(Routes.APP) {
             val context = LocalContext.current
             val windowSizeClass = calculateWindowSizeClass(context as Activity)
             MainScreen(
