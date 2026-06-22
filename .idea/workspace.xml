@@ -4,8 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1dbf8873-9940-4f54-b9da-652a0d92b9cd" name="Changes" comment="update for logique app">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
+    <list default="true" id="1dbf8873-9940-4f54-b9da-652a0d92b9cd" name="Changes" comment="solution for login and security">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,7 +15,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="main" />
+        <entry key="$PROJECT_DIR$" value="main-3" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -26,12 +26,12 @@
     &quot;assignee&quot;: &quot;anasseraoui-oss&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/anasseraoui-oss/project-mobile-fin-de-module",
-    "accountId": "c573153b-fd4c-4d2b-a5d0-d4a7292a0b96"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/anasseraoui-oss/project-mobile-fin-de-module&quot;,
+    &quot;accountId&quot;: &quot;e0b5c0b2-4607-4a17-ba92-64024cf66756&quot;
   }
-}]]></component>
+}</component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
   &quot;isMigrated&quot;: true
@@ -51,7 +51,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "main-3",
+    "git-widget-placeholder": "main-4",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/pc/Documents/project mobile fin de module/update/project-mobile-fin-de-module/project-mobile-fin-de-module",
     "node.js.detected.package.eslint": "true",
@@ -80,6 +80,10 @@
     <recent_temporary>
       <list>
         <item itemvalue="Docker.docker-compose.yml: Compose Deployment" />
+        <item itemvalue="Docker.docker-compose.yml: Compose Deployment" />
+        <item itemvalue="Docker.docker-compose.yml: Compose Deployment" />
+        <item itemvalue="Docker.docker-compose.yml: Compose Deployment" />
+        <item itemvalue="Docker.docker-compose.yml: Compose Deployment" />
       </list>
     </recent_temporary>
   </component>
@@ -101,7 +105,6 @@
       <workItem from="1778016905886" duration="3052000" />
       <workItem from="1779121511206" duration="4313000" />
       <workItem from="1779186895942" duration="963000" />
-      <workItem from="1780074339292" duration="417000" />
     </task>
     <task id="LOCAL-00001" summary="update for frontend">
       <option name="closed" value="true" />
@@ -135,15 +138,7 @@
       <option name="project" value="LOCAL" />
       <updated>1779186977486</updated>
     </task>
-    <task id="LOCAL-00005" summary="update for logique app">
-      <option name="closed" value="true" />
-      <created>1780074428676</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1780074428676</updated>
-    </task>
-    <option name="localTasksCounter" value="6" />
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -155,7 +150,6 @@
     <MESSAGE value="update for frontend" />
     <MESSAGE value="update for frontend +2" />
     <MESSAGE value="solution for login and security" />
-    <MESSAGE value="update for logique app" />
-    <option name="LAST_COMMIT_MESSAGE" value="update for logique app" />
+    <option name="LAST_COMMIT_MESSAGE" value="solution for login and security" />
   </component>
 </project>
