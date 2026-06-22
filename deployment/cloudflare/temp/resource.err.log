@@ -43,3 +43,5 @@
 2026-06-22T14:12:20Z INF Registered tunnel connection connIndex=0 connection=88bb0fdf-13e6-4e11-a694-e06ce784a765 event=0 ip=198.41.192.27 location=mrs01 protocol=quic
 2026-06-22T14:19:55Z ERR  error="Incoming request ended abruptly: context canceled" connIndex=0 event=1 ingressRule=0 originService=http://localhost:8082
 2026-06-22T14:19:55Z ERR Request failed error="Incoming request ended abruptly: context canceled" connIndex=0 dest=https://flame-yrs-teens-copies.trycloudflare.com/api/v1/formations?page=0&size=10 event=0 ip=198.41.192.27 type=http
+2026-06-22T14:46:45Z ERR  error="Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: EOF" connIndex=0 event=1 ingressRule=0 originService=http://localhost:8082
+2026-06-22T14:46:45Z ERR Request failed error="Unable to reach the origin service. The service may be down or it may not be responding to traffic from cloudflared: EOF" connIndex=0 dest=https://flame-yrs-teens-copies.trycloudflare.com/api/v1/quizzes/history event=0 ip=198.41.192.27 type=http
