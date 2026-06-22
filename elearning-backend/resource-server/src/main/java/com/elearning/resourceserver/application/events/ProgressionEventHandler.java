@@ -14,10 +14,12 @@ import com.elearning.resourceserver.domain.enums.TentativeQuizStatus;
 import com.elearning.resourceserver.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -40,8 +42,8 @@ public class ProgressionEventHandler {
      * RB-08: PresenceCreatedEvent → recalcule presenceRate
      */
     @Async
-    @EventListener
-    @Transactional
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handlePresenceCreated(PresenceCreatedEvent event) {
         log.info("Handling PresenceCreatedEvent for apprenant={} seance={}", event.getApprenantId(), event.getSeanceId());
 
@@ -72,7 +74,7 @@ public class ProgressionEventHandler {
                 notificationService.sendToUser(apprenantId,
                         "Quiz disponible",
                         "Vous pouvez maintenant passer le quiz du cours '" + course.getTitle() + "'",
-                        Map.of("type", "QUIZ_AVAILABLE", "coursId", coursId.toString()));
+                        Map.of("type", "QUIZ_AVAILABLE", "coursId", coursId.toString(), "deepLink", "quiz_history"));
             }
         }
     }
@@ -81,8 +83,8 @@ public class ProgressionEventHandler {
      * RB-08: QuizSubmittedEvent → update Progression.quizStatus
      */
     @Async
-    @EventListener
-    @Transactional
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleQuizSubmitted(QuizSubmittedEvent event) {
         log.info("Handling QuizSubmittedEvent for apprenant={} quiz={} status={}",
                 event.getApprenantId(), event.getQuizId(), event.getStatus());
@@ -105,8 +107,8 @@ public class ProgressionEventHandler {
      * RB-08: QuizValidatedEvent → unlock next course or generate certificate
      */
     @Async
-    @EventListener
-    @Transactional
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleQuizValidated(QuizValidatedEvent event) {
         log.info("Handling QuizValidatedEvent for apprenant={} cours={}", event.getApprenantId(), event.getCoursId());
 
@@ -153,7 +155,7 @@ public class ProgressionEventHandler {
                 notificationService.sendToUser(apprenantId,
                         "Cours suivant débloqué",
                         "Le cours '" + nextCourse.getTitle() + "' est maintenant accessible !",
-                        Map.of("type", "COURSE_UNLOCKED", "coursId", nextCourse.getId().toString()));
+                        Map.of("type", "COURSE_UNLOCKED", "coursId", nextCourse.getId().toString(), "deepLink", "quiz_history"));
             }
         } else {
             // Last course → check and generate certificate
@@ -166,8 +168,8 @@ public class ProgressionEventHandler {
      * InscriptionCreatedEvent → create Progression for each course
      */
     @Async
-    @EventListener
-    @Transactional
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT, fallbackExecution = true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleInscriptionCreated(InscriptionCreatedEvent event) {
         log.info("Handling InscriptionCreatedEvent for apprenant={} formation={}",
                 event.getApprenantId(), event.getFormationId());
@@ -200,6 +202,6 @@ public class ProgressionEventHandler {
         notificationService.sendToUser(apprenantId,
                 "Bienvenue !",
                 "Bienvenue dans la formation. Votre premier cours est débloqué !",
-                Map.of("type", "ENROLLMENT", "formationId", formationId.toString()));
+                Map.of("type", "ENROLLMENT", "formationId", formationId.toString(), "deepLink", "profile"));
     }
 }

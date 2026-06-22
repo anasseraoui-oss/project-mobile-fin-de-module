@@ -25,6 +25,9 @@ data class FormationEntity(
     val tags: String,               // JSON-encoded List<String>
     @ColumnInfo(name = "is_enrolled") val isEnrolled: Boolean,
     @ColumnInfo(name = "progress_percent") val progressPercent: Int,
+    @ColumnInfo(name = "category_id") val categoryId: String? = null,
+    val prerequisites: String = "[]",
+    val certified: Boolean = false,
     @ColumnInfo(name = "last_synced_at") val lastSyncedAt: Long = System.currentTimeMillis()
 )
 

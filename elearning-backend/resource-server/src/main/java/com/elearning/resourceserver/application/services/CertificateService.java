@@ -112,7 +112,7 @@ public class CertificateService {
         notificationService.sendToUser(apprenantId,
                 "Félicitations !",
                 "Votre certificat pour " + formation.getTitle() + " est disponible",
-                Map.of("type", "CERTIFICATE", "certId", certificat.getId().toString()));
+                Map.of("type", "CERTIFICATE", "certId", certificat.getId().toString(), "deepLink", "certificates"));
 
         log.info("Certificate generated for apprenant={} formation={}", apprenantId, formationId);
         return certificat;

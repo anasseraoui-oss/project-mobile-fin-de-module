@@ -34,7 +34,7 @@ object NetworkModule {
     fun provideLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor().apply {
             level = if (BuildConfig.DEBUG)
-                HttpLoggingInterceptor.Level.BODY
+                HttpLoggingInterceptor.Level.BASIC
             else
                 HttpLoggingInterceptor.Level.NONE
         }
@@ -67,7 +67,7 @@ object NetworkModule {
         authInterceptor: AuthInterceptor
     ): OkHttpClient = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)       // JWT Bearer injection + refresh
-        .addInterceptor(loggingInterceptor)    // After auth so token is visible in logs (debug)
+        .addInterceptor(loggingInterceptor)
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)     // Longer for stream URLs
         .writeTimeout(30, TimeUnit.SECONDS)

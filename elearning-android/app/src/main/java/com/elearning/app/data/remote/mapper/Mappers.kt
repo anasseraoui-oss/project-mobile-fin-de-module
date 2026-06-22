@@ -27,6 +27,22 @@ fun UserDto.toDomain() = User(
     isEmailVerified = isEmailVerified
 )
 
+fun UserProfileDto.toDomain() = UserProfile(
+    id = UUID.fromString(id),
+    email = email,
+    firstName = firstName,
+    lastName = lastName,
+    fullName = fullName ?: "$firstName $lastName",
+    role = runCatching { UserRole.valueOf(role) }.getOrDefault(UserRole.APPRENANT),
+    avatarUrl = avatarUrl,
+    organisationName = organisationName,
+    hoursSpent = hoursSpent ?: 0,
+    completedCourses = completedCourses ?: 0,
+    completedFormations = completedFormations ?: 0,
+    enrolledFormations = enrolledFormations ?: 0,
+    certificatesCount = certificatesCount ?: 0
+)
+
 // ─── Formation ────────────────────────────────────────────────────────────────
 
 fun FormationDto.toDomain() = Formation(
@@ -45,7 +61,54 @@ fun FormationDto.toDomain() = Formation(
     courseCount = courseCount ?: 0,
     tags = tags ?: emptyList(),
     isEnrolled = isEnrolled ?: false,
-    progressPercent = progressPercent ?: 0
+    progressPercent = progressPercent ?: 0,
+    categoryId = categoryId,
+    prerequisites = prerequisites.orEmpty(),
+    certified = certified ?: false
+)
+
+fun FormationCategoryDto.toDomain() = FormationCategory(
+    id = id,
+    title = title,
+    icon = icon,
+    formationsCount = formationsCount ?: 0
+)
+
+fun InstructorDashboardDto.toDomain() = InstructorDashboard(
+    instructor = instructor.toDomain(),
+    stats = stats.toDomain()
+)
+
+fun InstructorProfileSummaryDto.toDomain() = InstructorProfileSummary(
+    id = UUID.fromString(id),
+    fullName = fullName ?: email.orEmpty(),
+    email = email.orEmpty(),
+    avatarUrl = avatarUrl,
+    certificationStatus = certificationStatus ?: "CERTIFIED",
+    levelLabel = levelLabel ?: "Formateur",
+    organisationName = organisationName
+)
+
+fun InstructorStatsDto.toDomain() = InstructorStats(
+    activeFormations = activeFormations ?: 0,
+    totalLearners = totalLearners ?: 0,
+    averageCompletionPercent = averageCompletionPercent ?: 0,
+    monthlyRevenue = monthlyRevenue ?: 0.0,
+    monthlyRevenueCurrency = monthlyRevenueCurrency ?: "MAD",
+    pendingActions = pendingActions ?: 0
+)
+
+fun InstructorFormationSummaryDto.toDomain() = InstructorFormationSummary(
+    id = UUID.fromString(id),
+    title = title ?: "Sans titre",
+    description = description.orEmpty(),
+    status = status ?: "BROUILLON",
+    coverImageUrl = coverImageUrl,
+    coursesCount = coursesCount ?: 0,
+    seancesCount = seancesCount ?: 0,
+    enrolledCount = enrolledCount ?: 0,
+    totalDuration = totalDuration ?: 0,
+    updatedAt = updatedAt
 )
 
 // ─── Course ───────────────────────────────────────────────────────────────────
@@ -153,11 +216,22 @@ fun AnswerResultDto.toDomain() = AnswerResult(
 // ─── Notification ─────────────────────────────────────────────────────────────
 
 fun NotificationDto.toDomain() = AppNotification(
-    id = UUID.fromString(id),
+    id = runCatching { UUID.fromString(id) }.getOrElse { UUID.randomUUID() },
     title = title,
     body = body,
-    type = NotificationType.valueOf(type),
-    deepLink = deepLink,
+    type = runCatching { NotificationType.valueOf(type.uppercase()) }.getOrDefault(NotificationType.SYSTEM),
+    deepLink = deepLink ?: data.extractNotificationDeepLink(),
     isRead = isRead,
     createdAt = createdAt
 )
+
+private fun String?.extractNotificationDeepLink(): String? {
+    if (this.isNullOrBlank()) return null
+    val patterns = listOf(
+        """"deepLink"\s*:\s*"([^"]+)"""".toRegex(),
+        """"deep_link"\s*:\s*"([^"]+)"""".toRegex()
+    )
+    return patterns.firstNotNullOfOrNull { pattern ->
+        pattern.find(this)?.groupValues?.getOrNull(1)
+    }
+}

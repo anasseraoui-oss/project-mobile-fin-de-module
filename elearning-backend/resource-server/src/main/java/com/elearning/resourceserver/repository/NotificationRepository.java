@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
@@ -16,10 +17,12 @@ public interface NotificationRepository extends JpaRepository<Notification, UUID
 
     long countByUserIdAndIsReadFalse(UUID userId);
 
+    @Transactional
     @Modifying
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.id = :id AND n.userId = :userId")
     int markAsRead(UUID id, UUID userId);
 
+    @Transactional
     @Modifying
     @Query("UPDATE Notification n SET n.isRead = true WHERE n.userId = :userId")
     void markAllAsRead(UUID userId);

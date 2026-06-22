@@ -1,0 +1,11 @@
+{
+  "environment": "development",
+  "minimumSupportedVersion": "1.0.0",
+  "authBaseUrl": "https://auth-dev.example.com/",
+  "resourceBaseUrl": "https://api-dev.example.com/",
+  "features": {
+    "offlineVideos": true,
+    "organizationDashboard": true,
+    "certificates": true
+  }
+}

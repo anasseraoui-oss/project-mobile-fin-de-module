@@ -1,6 +1,8 @@
 package com.elearning.resourceserver.repository;
 
 import com.elearning.resourceserver.domain.Seance;
+import com.elearning.resourceserver.domain.enums.SeanceStatus;
+import com.elearning.resourceserver.domain.enums.SeanceType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,6 +22,16 @@ public interface SeanceRepository extends JpaRepository<Seance, UUID> {
 
     long countByCoursId(UUID coursId);
 
-    @Query("SELECT s FROM Seance s WHERE s.type = 'LIVE' AND s.scheduledAt BETWEEN :fromDate AND :toDate")
-    List<Seance> findUpcomingLiveSessions(@Param("fromDate") LocalDateTime fromDate, @Param("toDate") LocalDateTime toDate);
+    @Query("SELECT COUNT(s) FROM Seance s WHERE s.course.formation.id = :formationId")
+    long countByFormationId(@Param("formationId") UUID formationId);
+
+    @Query("SELECT s FROM Seance s " +
+           "WHERE s.type = :type " +
+           "AND s.status = :status " +
+           "AND s.scheduledAt BETWEEN :fromDate AND :toDate")
+    List<Seance> findUpcomingLiveSessions(
+            @Param("type") SeanceType type,
+            @Param("status") SeanceStatus status,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate);
 }

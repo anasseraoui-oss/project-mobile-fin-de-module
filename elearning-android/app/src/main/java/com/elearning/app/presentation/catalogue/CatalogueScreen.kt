@@ -1,6 +1,8 @@
 package com.elearning.app.presentation.catalogue
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
@@ -28,6 +30,8 @@ fun CatalogueScreen(
 ) {
     val searchQuery by viewModel.searchQuery.collectAsState()
     val selectedLevel by viewModel.selectedLevel.collectAsState()
+    val selectedCategoryId by viewModel.selectedCategoryId.collectAsState()
+    val categories by viewModel.categories.collectAsState()
     val formations = viewModel.formationsFlow.collectAsLazyPagingItems()
     val gridState = rememberLazyGridState()
 
@@ -73,6 +77,22 @@ fun CatalogueScreen(
                         .fillMaxWidth()
                         .padding(start = Spacing.lg, end = Spacing.lg, bottom = Spacing.md)
                 )
+
+                if (categories.isNotEmpty()) {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = Spacing.lg),
+                        horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
+                        modifier = Modifier.padding(bottom = Spacing.md)
+                    ) {
+                        items(categories) { category ->
+                            FilterChip(
+                                selected = selectedCategoryId == category.id,
+                                onClick = { viewModel.updateCategoryFilter(category.id) },
+                                label = { Text(category.title) }
+                            )
+                        }
+                    }
+                }
 
                 // Paging State Handling
                 when (val refreshState = formations.loadState.refresh) {

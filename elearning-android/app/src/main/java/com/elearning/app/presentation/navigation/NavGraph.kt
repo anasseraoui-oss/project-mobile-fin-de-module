@@ -5,6 +5,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
@@ -43,6 +46,7 @@ fun ELearningNavGraph(
     navController: NavHostController = rememberNavController()
 ) {
     val uiState by authViewModel.uiState.collectAsState()
+    var pendingAppDeepLink by remember { mutableStateOf<String?>(null) }
 
     // Handle one-shot navigation events from AuthViewModel
     LaunchedEffect(authViewModel.events) {
@@ -61,6 +65,12 @@ fun ELearningNavGraph(
                 is AuthEvent.ShowError -> { /* handled inline by screens */ }
                 is AuthEvent.StartOAuthFlow -> {
                     // The screen handles the Custom Tab launch directly via Intent
+                }
+                is AuthEvent.NavigateDeepLink -> {
+                    pendingAppDeepLink = event.route
+                    navController.navigate(Routes.APP) {
+                        launchSingleTop = true
+                    }
                 }
             }
         }
@@ -100,6 +110,9 @@ fun ELearningNavGraph(
             val windowSizeClass = calculateWindowSizeClass(context as Activity)
             MainScreen(
                 windowSizeClass = windowSizeClass,
+                authViewModel = authViewModel,
+                pendingDeepLink = pendingAppDeepLink,
+                onPendingDeepLinkConsumed = { pendingAppDeepLink = null },
                 onLogout = { authViewModel.logout() }
             )
         }

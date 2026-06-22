@@ -1,6 +1,7 @@
 package com.elearning.resourceserver.repository;
 
 import com.elearning.resourceserver.domain.Formation;
+import com.elearning.resourceserver.domain.enums.FormationLevel;
 import com.elearning.resourceserver.domain.enums.FormationStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,10 +24,18 @@ public interface FormationRepository extends JpaRepository<Formation, UUID> {
            "WHERE f.status = 'PUBLIEE' AND o.status = 'ACTIVE' " +
            "AND (:level IS NULL OR f.level = :level) " +
            "AND (:language IS NULL OR f.language = :language) " +
-           "AND (:search IS NULL OR LOWER(f.title) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%')))")
-    Page<Formation> findByFilters(@Param("level") String level,
+           "AND (:search IS NULL OR LOWER(f.title) LIKE LOWER(CONCAT('%', :search, '%')) " +
+           "OR LOWER(COALESCE(f.description, '')) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+           "AND (:categoryId IS NULL OR f.categoryId = :categoryId OR " +
+           "(:categoryId = 'backend' AND (LOWER(f.title) LIKE '%spring%' OR LOWER(f.title) LIKE '%backend%' OR LOWER(COALESCE(f.description, '')) LIKE '%api%')) OR " +
+           "(:categoryId = 'devops' AND (LOWER(f.title) LIKE '%docker%' OR LOWER(f.title) LIKE '%devops%' OR LOWER(f.title) LIKE '%kubernetes%')) OR " +
+           "(:categoryId = 'mobile' AND (LOWER(f.title) LIKE '%android%' OR LOWER(f.title) LIKE '%flutter%' OR LOWER(f.title) LIKE '%mobile%')) OR " +
+           "(:categoryId = 'frontend' AND (LOWER(f.title) LIKE '%react%' OR LOWER(f.title) LIKE '%frontend%' OR LOWER(f.title) LIKE '%web%')) OR " +
+           "(:categoryId = 'cloud' AND (LOWER(f.title) LIKE '%cloud%' OR LOWER(f.title) LIKE '%kubernetes%')))")
+    Page<Formation> findByFilters(@Param("level") FormationLevel level,
                                   @Param("language") String language,
                                   @Param("search") String search,
+                                  @Param("categoryId") String categoryId,
                                   Pageable pageable);
 
     List<Formation> findByOrganisationId(UUID organisationId);

@@ -14,13 +14,16 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
+    open-in-view: false
     properties:
       hibernate:
-        format_sql: true
+        format_sql: false
         dialect: org.hibernate.dialect.PostgreSQLDialect
   data:
     redis:
+      repositories:
+        enabled: false
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
@@ -28,14 +31,14 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${AUTH_SERVER_ISSUER_URI:http://10.0.2.2:9000}
+          issuer-uri: ${AUTH_SERVER_ISSUER_URI:http://localhost:8081}
           jwk-set-uri: ${AUTH_SERVER_URL:http://auth-server:9000}/oauth2/jwks
 
 minio:
   url: ${MINIO_INTERNAL_URL:http://localhost:9000}
   public-url: ${MINIO_PUBLIC_URL:http://localhost:9000}
-  access-key: ${MINIO_ROOT_USER:admin}
-  secret-key: ${MINIO_ROOT_PASSWORD:minio_secret_password}
+  access-key: ${MINIO_ROOT_USER:}
+  secret-key: ${MINIO_ROOT_PASSWORD:}
   bucket-media: elearning-media
   bucket-public: elearning-public
   bucket-uploads: elearning-uploads
@@ -48,5 +51,5 @@ server:
 
 logging:
   level:
-    org.springframework.security: DEBUG
-    com.elearning: DEBUG
+    org.springframework.security: INFO
+    com.elearning: INFO

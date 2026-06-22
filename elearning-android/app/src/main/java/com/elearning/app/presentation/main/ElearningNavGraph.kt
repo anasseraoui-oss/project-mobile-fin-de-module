@@ -12,10 +12,14 @@ import com.elearning.app.presentation.certificates.CertificatesScreen
 import com.elearning.app.presentation.favorites.FavoritesScreen
 import com.elearning.app.presentation.formation.FormationDetailScreen
 import com.elearning.app.presentation.home.HomeScreen
+import com.elearning.app.presentation.instructor.FormationEditorRoute
+import com.elearning.app.presentation.instructor.InstructorDashboardRoute
+import com.elearning.app.presentation.instructor.SeanceEditorRoute
 import com.elearning.app.presentation.notifications.NotificationsScreen
 import com.elearning.app.presentation.player.SeancePlayerScreen
 import com.elearning.app.presentation.profile.ProfileScreen
 import com.elearning.app.presentation.quiz.QuizScreen
+import com.elearning.app.presentation.quiz.history.QuizHistoryScreen
 import com.elearning.app.presentation.scanner.ScannerScreen
 import com.elearning.app.presentation.trainings.MyTrainingsScreen
 
@@ -29,13 +33,14 @@ fun ElearningNavGraph(
         composable(MainRoutes.HOME) {
             HomeScreen(
                 onNavigateToDetail = { id -> navController.navigate(MainRoutes.formationDetail(id)) },
+                onNavigateToCatalogue = { categoryId -> navController.navigate(MainRoutes.catalogue(categoryId)) },
                 onNavigateToNotifications = { navController.navigate(MainRoutes.NOTIFICATIONS) }
             )
         }
         composable(MainRoutes.MY_TRAININGS) {
             MyTrainingsScreen(
                 onNavigateToPlayer = { id -> navController.navigate(MainRoutes.player(id)) },
-                onNavigateToCatalogue = { navController.navigate(MainRoutes.CATALOGUE) }
+                onNavigateToCatalogue = { navController.navigate(MainRoutes.catalogue()) }
             )
         }
         composable(MainRoutes.FAVORITES) {
@@ -46,7 +51,14 @@ fun ElearningNavGraph(
         composable(MainRoutes.CERTIFICATES) {
             CertificatesScreen()
         }
-        composable(MainRoutes.CATALOGUE) {
+        composable(
+            route = MainRoutes.CATALOGUE_WITH_FILTER,
+            arguments = listOf(navArgument("categoryId") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+            })
+        ) {
             CatalogueScreen(
                 onNavigateToDetail = { id -> navController.navigate(MainRoutes.formationDetail(id)) }
             )
@@ -70,8 +82,42 @@ fun ElearningNavGraph(
         }
         composable(MainRoutes.PROFILE) {
             ProfileScreen(
-                onLogout = onLogout
+                onLogout = onLogout,
+                onNavigateToInstructor = { navController.navigate(MainRoutes.INSTRUCTOR_DASHBOARD) },
+                onNavigateToQuizHistory = { navController.navigate(MainRoutes.QUIZ_HISTORY) }
             )
+        }
+        composable(MainRoutes.QUIZ_HISTORY) {
+            QuizHistoryScreen(onNavigateBack = { navController.popBackStack() })
+        }
+        composable(MainRoutes.INSTRUCTOR_DASHBOARD) {
+            InstructorDashboardRoute(
+                onNavigateBack = { navController.popBackStack() },
+                onCreateFormation = { navController.navigate(MainRoutes.INSTRUCTOR_FORMATION_NEW) },
+                onEditFormation = { id -> navController.navigate(MainRoutes.instructorFormationEdit(id)) },
+                onPreviewFormation = { id -> navController.navigate(MainRoutes.formationDetail(id)) }
+            )
+        }
+        composable(MainRoutes.INSTRUCTOR_FORMATION_NEW) {
+            FormationEditorRoute(
+                onNavigateBack = { navController.popBackStack() },
+                onEditSeanceContent = { id -> navController.navigate(MainRoutes.instructorSeanceEdit(id)) }
+            )
+        }
+        composable(
+            route = MainRoutes.INSTRUCTOR_FORMATION_EDIT,
+            arguments = listOf(navArgument("formationId") { type = NavType.StringType })
+        ) {
+            FormationEditorRoute(
+                onNavigateBack = { navController.popBackStack() },
+                onEditSeanceContent = { id -> navController.navigate(MainRoutes.instructorSeanceEdit(id)) }
+            )
+        }
+        composable(
+            route = MainRoutes.INSTRUCTOR_SEANCE_EDIT,
+            arguments = listOf(navArgument("seanceId") { type = NavType.StringType })
+        ) {
+            SeanceEditorRoute(onNavigateBack = { navController.popBackStack() })
         }
         composable(MainRoutes.QUIZ) {
             QuizScreen(onNavigateBack = { navController.popBackStack() })
@@ -80,10 +126,9 @@ fun ElearningNavGraph(
             NotificationsScreen(
                 onNavigateBack = { navController.popBackStack() },
                 onNotificationClick = { deepLink ->
-                    when {
-                        deepLink == MainRoutes.CERTIFICATES -> navController.navigate(MainRoutes.CERTIFICATES)
-                        MainRoutes.isPlayerRoute(deepLink) -> navController.navigate(deepLink!!)
-                        MainRoutes.isQuizRoute(deepLink) -> navController.navigate(deepLink!!)
+                    when (val route = MainRoutes.resolveDeepLink(deepLink)) {
+                        null -> Unit
+                        else -> navController.navigate(route)
                     }
                 }
             )

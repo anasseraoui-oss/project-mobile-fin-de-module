@@ -37,7 +37,14 @@ public class SecurityConfig {
             // Le filter chain @Order(1) (AuthorizationServer) gère /oauth2/token directement
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/auth/register", "/api/auth/**").permitAll()
-                .requestMatchers("/login", "/error", "/actuator/health").permitAll()
+                .requestMatchers(
+                    "/login",
+                    "/error",
+                    "/actuator/health",
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             // Retourner 401 JSON pour les clients API (Android) au lieu de rediriger

@@ -4,14 +4,18 @@ import com.elearning.app.data.repository.AuthRepositoryImpl
 import com.elearning.app.data.repository.CertificateRepositoryImpl
 import com.elearning.app.data.repository.FavoritesRepositoryImpl
 import com.elearning.app.data.repository.FormationRepositoryImpl
+import com.elearning.app.data.repository.InstructorRepositoryImpl
 import com.elearning.app.data.repository.NotificationRepositoryImpl
+import com.elearning.app.data.repository.ProfileRepositoryImpl
 import com.elearning.app.data.repository.QuizRepositoryImpl
 import com.elearning.app.data.repository.SeanceRepositoryImpl
 import com.elearning.app.domain.repository.AuthRepository
 import com.elearning.app.domain.repository.CertificateRepository
 import com.elearning.app.domain.repository.FavoritesRepository
 import com.elearning.app.domain.repository.FormationRepository
+import com.elearning.app.domain.repository.InstructorRepository
 import com.elearning.app.domain.repository.NotificationRepository
+import com.elearning.app.domain.repository.ProfileRepository
 import com.elearning.app.domain.repository.QuizRepository
 import com.elearning.app.domain.repository.SeanceRepository
 import dagger.Binds
@@ -38,6 +42,10 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
+    abstract fun bindInstructorRepository(impl: InstructorRepositoryImpl): InstructorRepository
+
+    @Binds
+    @Singleton
     abstract fun bindFavoritesRepository(impl: FavoritesRepositoryImpl): FavoritesRepository
 
     @Binds
@@ -47,6 +55,10 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindNotificationRepository(impl: NotificationRepositoryImpl): NotificationRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindProfileRepository(impl: ProfileRepositoryImpl): ProfileRepository
 
     @Binds
     @Singleton

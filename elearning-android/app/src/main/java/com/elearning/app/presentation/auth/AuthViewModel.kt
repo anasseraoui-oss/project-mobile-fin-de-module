@@ -26,7 +26,8 @@ data class AuthUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val currentUser: User? = null,
-    val authState: AuthState = AuthState.Loading
+    val authState: AuthState = AuthState.Loading,
+    val pendingDeepLink: String? = null
 )
 
 sealed class AuthEvent {
@@ -34,6 +35,7 @@ sealed class AuthEvent {
     data object NavigateToLogin : AuthEvent()
     data class ShowError(val message: String) : AuthEvent()
     data class StartOAuthFlow(val authUri: String) : AuthEvent()
+    data class NavigateDeepLink(val route: String) : AuthEvent()
 }
 
 // ─── ViewModel ────────────────────────────────────────────────────────────────
@@ -61,7 +63,7 @@ class AuthViewModel @Inject constructor(
     private val authorizationService: AuthorizationService
 ) : ViewModel() {
 
-    private val googleAuthManager = GoogleAuthManager(context)
+    private val googleAuthManager by lazy { GoogleAuthManager(context) }
 
     val googleSignInIntent: Intent
         get() = googleAuthManager.getSignInIntent()
@@ -83,29 +85,29 @@ class AuthViewModel @Inject constructor(
      */
     fun checkAuthState() {
         Log.d("AuthViewModel", "Checking auth state...")
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            checkAuthStateUseCase()
-                .onEach { state ->
-                    Log.d("AuthViewModel", "Auth state changed: $state")
-                    _uiState.update { it.copy(authState = state, isLoading = false) }
-                    when (state) {
-                        AuthState.Authenticated -> {
-                            Log.d("AuthViewModel", "User authenticated, fetching profile...")
-                            fetchCurrentUser()
-                            _events.emit(AuthEvent.NavigateToHome)
-                        }
-                        AuthState.Unauthenticated -> {
-                            Log.d("AuthViewModel", "User unauthenticated, navigating to login")
-                            _events.emit(AuthEvent.NavigateToLogin)
-                        }
-                        AuthState.Loading -> {
-                            Log.d("AuthViewModel", "Auth state is Loading...")
-                        }
+        _uiState.update { it.copy(isLoading = true) }
+        checkAuthStateUseCase()
+            .distinctUntilChanged()
+            .onEach { state ->
+                Log.d("AuthViewModel", "Auth state changed: $state")
+                _uiState.update { it.copy(authState = state, isLoading = false) }
+                when (state) {
+                    AuthState.Authenticated -> {
+                        Log.d("AuthViewModel", "User authenticated, fetching profile...")
+                        _events.emit(AuthEvent.NavigateToHome)
+                        fetchCurrentUser()
+                        consumePendingDeepLink()
+                    }
+                    AuthState.Unauthenticated -> {
+                        Log.d("AuthViewModel", "User unauthenticated, navigating to login")
+                        _events.emit(AuthEvent.NavigateToLogin)
+                    }
+                    AuthState.Loading -> {
+                        Log.d("AuthViewModel", "Auth state is Loading...")
                     }
                 }
-                .launchIn(viewModelScope)
-        }
+            }
+            .launchIn(viewModelScope)
     }
 
     // ──────────────────────────── CLASSIC LOGIN ──────────────────────────────
@@ -286,6 +288,25 @@ class AuthViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun onDeepLinkReceived(route: String) {
+        viewModelScope.launch {
+            if (_uiState.value.authState == AuthState.Authenticated) {
+                _events.emit(AuthEvent.NavigateDeepLink(route))
+            } else {
+                _uiState.update { it.copy(pendingDeepLink = route) }
+            }
+        }
+    }
+
+    private fun consumePendingDeepLink() {
+        _uiState.value.pendingDeepLink?.let { route ->
+            viewModelScope.launch {
+                _events.emit(AuthEvent.NavigateDeepLink(route))
+                _uiState.update { it.copy(pendingDeepLink = null) }
+            }
+        }
     }
 
     override fun onCleared() {

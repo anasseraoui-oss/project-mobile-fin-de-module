@@ -7,26 +7,28 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import com.elearning.app.domain.repository.NotificationRepository
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class ElearningFirebaseMessagingService : FirebaseMessagingService() {
 
-    // Inject repositories here if token needs to be sent to backend
-    // @Inject lateinit var tokenRepository: TokenRepository
+    @Inject lateinit var notificationRepository: NotificationRepository
+
+    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        // Automatically sync new token with Resource Server / Backend
-        CoroutineScope(Dispatchers.IO).launch {
+        serviceScope.launch {
             try {
-                // tokenRepository.sendFCMToken(token)
+                notificationRepository.updateFcmToken(token)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -57,15 +59,18 @@ class ElearningFirebaseMessagingService : FirebaseMessagingService() {
         }
 
         // Deep linking Intent config
-        // val intent = Intent(Intent.ACTION_VIEW, Uri.parse(deepLink ?: "elearning://home"))
-        // val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+        val intent = Intent(this, com.elearning.app.presentation.MainActivity::class.java).apply {
+            putExtra("deep_link", deepLink)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
+        val pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
         val notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle(title)
             .setContentText(body)
             .setSmallIcon(android.R.drawable.ic_dialog_info) // TODO: replace with app icon
             .setAutoCancel(true)
-            // .setContentIntent(pendingIntent)
+            .setContentIntent(pendingIntent)
             .build()
 
         notificationManager.notify(System.currentTimeMillis().toInt(), notification)

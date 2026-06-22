@@ -19,6 +19,7 @@ public class CourseRequestDto {
     // Ajoutés:
     private Integer presenceThreshold;
     private Integer quizPassScore;
+    private String status;
     
     @NotNull(message = "L'ID de la formation est obligatoire")
     private java.util.UUID formationId;

@@ -30,10 +30,12 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Fallback values (overridden per buildType below)
-        buildConfigField("String", "AUTH_SERVER_URL", "\"https://auth.elearning.com/\"")
-        buildConfigField("String", "RESOURCE_SERVER_URL", "\"https://api.elearning.com/\"")
-        buildConfigField("String", "GOOGLE_CLIENT_ID", "\"YOUR_GOOGLE_CLIENT_ID\"")
-        buildConfigField("String", "FACEBOOK_CLIENT_ID", "\"YOUR_FACEBOOK_CLIENT_ID\"")
+        buildConfigField("String", "AUTH_SERVER_URL", "\"\"")
+        buildConfigField("String", "RESOURCE_SERVER_URL", "\"\"")
+        buildConfigField("String", "GOOGLE_CLIENT_ID", "\"\"")
+        buildConfigField("String", "FACEBOOK_CLIENT_ID", "\"\"")
+        manifestPlaceholders["allowBackup"] = "false"
+        manifestPlaceholders["usesCleartextTraffic"] = "false"
     }
 
     buildTypes {
@@ -45,18 +47,44 @@ android {
                 "proguard-rules.pro"
             )
             // Production URLs — safe to commit
-            buildConfigField("String", "AUTH_SERVER_URL", "\"https://auth.elearning.com/\"")
-            buildConfigField("String", "RESOURCE_SERVER_URL", "\"https://api.elearning.com/\"")
+            val authUrl = localProps.getProperty("RELEASE_AUTH_SERVER_URL")
+                ?: System.getenv("RELEASE_AUTH_SERVER_URL")
+                ?: "https://auth.elearning.com/"
+            val resourceUrl = localProps.getProperty("RELEASE_RESOURCE_SERVER_URL")
+                ?: System.getenv("RELEASE_RESOURCE_SERVER_URL")
+                ?: "https://api.elearning.com/"
+            val googleClientId = localProps.getProperty("GOOGLE_CLIENT_ID")
+                ?: System.getenv("GOOGLE_CLIENT_ID")
+                ?: ""
+            val facebookClientId = localProps.getProperty("FACEBOOK_CLIENT_ID")
+                ?: System.getenv("FACEBOOK_CLIENT_ID")
+                ?: ""
+            buildConfigField("String", "AUTH_SERVER_URL", "\"$authUrl\"")
+            buildConfigField("String", "RESOURCE_SERVER_URL", "\"$resourceUrl\"")
+            buildConfigField("String", "GOOGLE_CLIENT_ID", "\"$googleClientId\"")
+            buildConfigField("String", "FACEBOOK_CLIENT_ID", "\"$facebookClientId\"")
             buildConfigField("Boolean", "ENABLE_LOGGING", "false")
+            manifestPlaceholders["allowBackup"] = "false"
+            manifestPlaceholders["usesCleartextTraffic"] = "false"
         }
         debug {
             isDebuggable = true
             buildConfigField("Boolean", "ENABLE_LOGGING", "true")
             // Read from local.properties — NEVER hardcode here
-            val authUrl = localProps.getProperty("AUTH_SERVER_URL", "http://10.0.2.2:9000/")
-            val resourceUrl = localProps.getProperty("RESOURCE_SERVER_URL", "http://10.0.2.2:8081/")
+            val authUrl = localProps.getProperty(
+                "AUTH_SERVER_URL",
+                "https://planner-salon-expressions-what.trycloudflare.com/"
+            )
+            val resourceUrl = localProps.getProperty(
+                "RESOURCE_SERVER_URL",
+                "https://custody-arise-cigarette-follows.trycloudflare.com/"
+            )
             buildConfigField("String", "AUTH_SERVER_URL", "\"$authUrl\"")
             buildConfigField("String", "RESOURCE_SERVER_URL", "\"$resourceUrl\"")
+            buildConfigField("String", "GOOGLE_CLIENT_ID", "\"${localProps.getProperty("GOOGLE_CLIENT_ID", "")}\"")
+            buildConfigField("String", "FACEBOOK_CLIENT_ID", "\"${localProps.getProperty("FACEBOOK_CLIENT_ID", "")}\"")
+            manifestPlaceholders["allowBackup"] = "true"
+            manifestPlaceholders["usesCleartextTraffic"] = "false"
         }
     }
 

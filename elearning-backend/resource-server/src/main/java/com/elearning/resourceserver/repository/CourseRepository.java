@@ -15,5 +15,7 @@ public interface CourseRepository extends JpaRepository<Course, UUID> {
     @Query("SELECT c FROM Course c WHERE c.formation.id = :formationId ORDER BY c.orderIndex ASC")
     List<Course> findByFormationIdOrderByOrderIndex(@Param("formationId") UUID formationId);
 
+    long countByFormationId(UUID formationId);
+
     boolean existsByFormationIdAndTitle(UUID formationId, String title);
 }

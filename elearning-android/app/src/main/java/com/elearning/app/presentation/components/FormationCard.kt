@@ -28,6 +28,7 @@ import com.elearning.app.presentation.theme.ELearningTheme
 import com.elearning.app.presentation.theme.Elevation
 import com.elearning.app.presentation.theme.Radius
 import com.elearning.app.presentation.theme.Spacing
+import java.util.Locale
 import java.util.UUID
 
 @Composable
@@ -280,7 +281,7 @@ fun RatingRow(rating: Float, enrollmentCount: Int, modifier: Modifier = Modifier
             modifier = Modifier.size(14.dp)
         )
         Text(
-            text = String.format("%.1f", rating),
+            text = String.format(Locale.getDefault(), "%.1f", rating),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.tertiary,
             fontWeight = FontWeight.SemiBold

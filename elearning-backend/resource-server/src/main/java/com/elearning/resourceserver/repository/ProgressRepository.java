@@ -20,4 +20,10 @@ public interface ProgressRepository extends JpaRepository<Progress, UUID> {
 
     @Query("SELECT p FROM Progress p WHERE p.user.id = :userId AND p.isCompleted = false")
     List<Progress> findPendingSyncByUserId(@Param("userId") UUID userId);
+
+    @Query("SELECT COALESCE(SUM(p.watchedSeconds), 0) FROM Progress p WHERE p.user.id = :userId")
+    Long sumWatchedSecondsByUserId(@Param("userId") UUID userId);
+
+    @Query("SELECT COUNT(p) FROM Progress p WHERE p.user.id = :userId AND p.isCompleted = true")
+    long countCompletedSeancesByUserId(@Param("userId") UUID userId);
 }

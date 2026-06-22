@@ -24,11 +24,27 @@ data class User(
     val isEmailVerified: Boolean = false
 ) {
     val fullName: String get() = "$firstName $lastName"
-    val isAdmin: Boolean get() = role == UserRole.ADMIN
+    val isAdmin: Boolean get() = role == UserRole.ADMIN || role == UserRole.ADMIN_ORG || role == UserRole.SUPER_ADMIN
     val isFormateur: Boolean get() = role == UserRole.FORMATEUR
 }
 
-enum class UserRole { APPRENANT, FORMATEUR, ADMIN }
+enum class UserRole { APPRENANT, FORMATEUR, ADMIN, ADMIN_ORG, SUPER_ADMIN }
+
+data class UserProfile(
+    val id: UUID,
+    val email: String,
+    val firstName: String,
+    val lastName: String,
+    val fullName: String,
+    val role: UserRole,
+    val avatarUrl: String? = null,
+    val organisationName: String? = null,
+    val hoursSpent: Int = 0,
+    val completedCourses: Int = 0,
+    val completedFormations: Int = 0,
+    val enrolledFormations: Int = 0,
+    val certificatesCount: Int = 0
+)
 
 // ──────────────────────────────────────────────────
 // FORMATION
@@ -50,10 +66,69 @@ data class Formation(
     val courseCount: Int = 0,
     val tags: List<String> = emptyList(),
     val isEnrolled: Boolean = false,
-    val progressPercent: Int = 0
+    val progressPercent: Int = 0,
+    val categoryId: String? = null,
+    val prerequisites: List<String> = emptyList(),
+    val certified: Boolean = false
 )
 
 enum class FormationLevel { DEBUTANT, INTERMEDIAIRE, AVANCE }
+
+data class FormationCategory(
+    val id: String,
+    val title: String,
+    val icon: String?,
+    val formationsCount: Int = 0
+)
+
+data class InstructorDashboard(
+    val instructor: InstructorProfileSummary,
+    val stats: InstructorStats
+)
+
+data class InstructorProfileSummary(
+    val id: UUID,
+    val fullName: String,
+    val email: String,
+    val avatarUrl: String?,
+    val certificationStatus: String,
+    val levelLabel: String,
+    val organisationName: String?
+)
+
+data class InstructorStats(
+    val activeFormations: Int,
+    val totalLearners: Int,
+    val averageCompletionPercent: Int,
+    val monthlyRevenue: Double,
+    val monthlyRevenueCurrency: String,
+    val pendingActions: Int
+)
+
+data class InstructorFormationSummary(
+    val id: UUID,
+    val title: String,
+    val description: String,
+    val status: String,
+    val coverImageUrl: String?,
+    val coursesCount: Int,
+    val seancesCount: Int,
+    val enrolledCount: Int,
+    val totalDuration: Int,
+    val updatedAt: String?
+)
+
+data class FormationDraftRequest(
+    val title: String,
+    val description: String,
+    val level: FormationLevel,
+    val language: String,
+    val price: Double,
+    val currency: String = "MAD",
+    val categoryId: String? = null,
+    val prerequisites: List<String> = emptyList(),
+    val certified: Boolean = false
+)
 
 // ──────────────────────────────────────────────────
 // COURSE

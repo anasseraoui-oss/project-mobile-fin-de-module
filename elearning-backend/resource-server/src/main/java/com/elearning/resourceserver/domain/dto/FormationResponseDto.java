@@ -33,4 +33,10 @@ public class FormationResponseDto {
     
     private Integer coursesCount;
     private Integer enrolledCount;
+    private Float rating;
+    private Boolean isEnrolled;
+    private Integer progressPercent;
+    private String categoryId;
+    private List<String> prerequisites;
+    private Boolean certified;
 }

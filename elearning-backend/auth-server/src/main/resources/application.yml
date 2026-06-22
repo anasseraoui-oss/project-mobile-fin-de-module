@@ -9,12 +9,15 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
+    open-in-view: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   data:
     redis:
+      repositories:
+        enabled: false
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD:}
@@ -23,9 +26,13 @@ server:
   port: 9000
 
 google:
-  client-id: 524576002214-celf4un38v2hdk4a7585rugkrl7gbufr.apps.googleusercontent.com
+  client-id: ${GOOGLE_CLIENT_ID:}
+
+security:
+  oauth2:
+    mobile-client-secret: ${MOBILE_CLIENT_SECRET:}
 
 logging:
   level:
-    org.springframework.security: TRACE
-    com.elearning: DEBUG
+    org.springframework.security: INFO
+    com.elearning: INFO

@@ -43,6 +43,24 @@ data class UserDto(
     @SerializedName(value = "isEmailVerified", alternate = ["email_verified", "emailVerified"]) val isEmailVerified: Boolean
 )
 
+data class UserProfileDto(
+    val id: String,
+    val email: String,
+    @SerializedName(value = "firstName", alternate = ["first_name"]) val firstName: String,
+    @SerializedName(value = "lastName", alternate = ["last_name"]) val lastName: String,
+    @SerializedName(value = "fullName", alternate = ["full_name"]) val fullName: String?,
+    val role: String,
+    @SerializedName(value = "avatarUrl", alternate = ["avatar_url"]) val avatarUrl: String?,
+    @SerializedName(value = "avatarKey", alternate = ["avatar_key"]) val avatarKey: String?,
+    @SerializedName(value = "organisationId", alternate = ["organisation_id"]) val organisationId: String?,
+    @SerializedName(value = "organisationName", alternate = ["organisation_name"]) val organisationName: String?,
+    @SerializedName(value = "enrolledFormations", alternate = ["enrolled_formations"]) val enrolledFormations: Int?,
+    @SerializedName(value = "completedFormations", alternate = ["completed_formations"]) val completedFormations: Int?,
+    @SerializedName(value = "completedCourses", alternate = ["completed_courses"]) val completedCourses: Int?,
+    @SerializedName(value = "certificatesCount", alternate = ["certificates_count"]) val certificatesCount: Int?,
+    @SerializedName(value = "hoursSpent", alternate = ["hours_spent"]) val hoursSpent: Int?
+)
+
 // ─── Formation ────────────────────────────────────────────────────────────────
 
 data class FormationDto(
@@ -66,7 +84,74 @@ data class FormationDto(
     @SerializedName("coursesCount")     val courseCount: Int?,
     val tags: List<String>? = null,
     @SerializedName(value = "isEnrolled", alternate = ["is_enrolled"]) val isEnrolled: Boolean?,
-    @SerializedName(value = "progressPercent", alternate = ["progress_percent"]) val progressPercent: Int?
+    @SerializedName(value = "progressPercent", alternate = ["progress_percent"]) val progressPercent: Int?,
+    val categoryId: String? = null,
+    val prerequisites: List<String>? = null,
+    val certified: Boolean? = null
+)
+
+data class FormationCategoryDto(
+    val id: String,
+    val title: String,
+    val icon: String?,
+    @SerializedName(value = "formationsCount", alternate = ["formations_count"]) val formationsCount: Int?
+)
+
+data class InstructorDashboardDto(
+    val instructor: InstructorProfileSummaryDto,
+    val stats: InstructorStatsDto
+)
+
+data class InstructorProfileSummaryDto(
+    val id: String,
+    @SerializedName(value = "fullName", alternate = ["full_name"]) val fullName: String?,
+    val email: String?,
+    @SerializedName(value = "avatarUrl", alternate = ["avatar_url"]) val avatarUrl: String?,
+    val certificationStatus: String?,
+    val levelLabel: String?,
+    val organisationName: String?
+)
+
+data class InstructorStatsDto(
+    val activeFormations: Int?,
+    val totalLearners: Int?,
+    val averageCompletionPercent: Int?,
+    val monthlyRevenue: Double?,
+    val monthlyRevenueCurrency: String?,
+    val pendingActions: Int?
+)
+
+data class InstructorFormationSummaryDto(
+    val id: String,
+    val title: String?,
+    val description: String?,
+    val status: String?,
+    val coverImageUrl: String?,
+    val coursesCount: Int?,
+    val seancesCount: Int?,
+    val enrolledCount: Int?,
+    val totalDuration: Int?,
+    val updatedAt: String?
+)
+
+data class FormationRequestDto(
+    val title: String,
+    val description: String,
+    val level: String,
+    val language: String,
+    val price: Double,
+    val currency: String = "MAD",
+    val categoryId: String? = null,
+    val prerequisites: List<String> = emptyList(),
+    val certified: Boolean = false
+)
+
+data class EnrollmentResponseDto(
+    @SerializedName(value = "inscriptionId", alternate = ["inscription_id"]) val inscriptionId: String?,
+    @SerializedName(value = "formationId", alternate = ["formation_id"]) val formationId: String?,
+    val status: String?,
+    @SerializedName(value = "enrolledAt", alternate = ["enrolled_at"]) val enrolledAt: String?,
+    @SerializedName(value = "paymentRequired", alternate = ["payment_required"]) val paymentRequired: Boolean?
 )
 
 // ─── Course ───────────────────────────────────────────────────────────────────
@@ -78,6 +163,15 @@ data class CourseDto(
     val description: String?,
     @SerializedName(value = "orderIndex", alternate = ["order_index"]) val orderIndex: Int,
     val seances: List<SeanceDto>? = null
+)
+
+data class CourseRequestDto(
+    val title: String,
+    val description: String? = null,
+    val orderIndex: Int,
+    val estimatedDuration: Int? = null,
+    val formationId: String,
+    val status: String? = null
 )
 
 // ─── Seance ───────────────────────────────────────────────────────────────────
@@ -98,6 +192,21 @@ data class SeanceDto(
     @SerializedName(value = "scheduledAt", alternate = ["scheduled_at"]) val scheduledAt: String?,
     @SerializedName(value = "isCompleted", alternate = ["is_completed"]) val isCompleted: Boolean?,
     @SerializedName(value = "progressSeconds", alternate = ["progress_seconds"]) val progressSeconds: Int?
+)
+
+data class SeanceRequestDto(
+    val title: String,
+    val description: String? = null,
+    val type: String,
+    val duration: Int? = null,
+    val scheduledAt: String? = null,
+    val meetingLink: String? = null,
+    val orderIndex: Int,
+    val status: String? = null
+)
+
+data class SeanceTextContentRequestDto(
+    val content: String
 )
 
 // ─── Stream URL ───────────────────────────────────────────────────────────────
@@ -124,6 +233,12 @@ data class PedagogicalResourceDto(
     @SerializedName(value = "mimeType", alternate = ["mime_type"]) val mimeType: String?,
     @SerializedName(value = "sizeBytes", alternate = ["size_bytes", "fileSize", "file_size"]) val sizeBytes: Long?,
     @SerializedName(value = "isDownloadable", alternate = ["is_downloadable"]) val isDownloadable: Boolean?
+)
+
+data class PedagogicalResourceRequestDto(
+    val title: String,
+    val type: String = "FILE",
+    val isDownloadable: Boolean = true
 )
 
 data class DownloadUrlDto(
@@ -159,6 +274,7 @@ data class CourseQuizOptionDto(
 )
 
 data class QuizSubmitRequestDto(
+    val attemptId: String,
     val answers: Map<String, String>
 )
 
@@ -167,6 +283,36 @@ data class BackendQuizResultDto(
     val passed: Boolean?,
     @SerializedName(value = "attemptId", alternate = ["attempt_id"]) val attemptId: String?,
     @SerializedName(value = "remainingAttempts", alternate = ["remaining_attempts"]) val remainingAttempts: Int?
+)
+
+data class QuizHistoryItemDto(
+    @SerializedName(value = "attemptId", alternate = ["attempt_id"]) val attemptId: String,
+    @SerializedName(value = "quizId", alternate = ["quiz_id"]) val quizId: String,
+    @SerializedName(value = "quizTitle", alternate = ["quiz_title"]) val quizTitle: String,
+    @SerializedName(value = "courseId", alternate = ["course_id"]) val courseId: String?,
+    @SerializedName(value = "courseTitle", alternate = ["course_title"]) val courseTitle: String?,
+    @SerializedName(value = "formationId", alternate = ["formation_id"]) val formationId: String?,
+    @SerializedName(value = "formationTitle", alternate = ["formation_title"]) val formationTitle: String?,
+    @SerializedName(value = "submittedAt", alternate = ["submitted_at"]) val submittedAt: String?,
+    val score: Double?,
+    val status: String?,
+    @SerializedName(value = "attemptNumber", alternate = ["attempt_number"]) val attemptNumber: Int?,
+    val passed: Boolean?,
+    @SerializedName(value = "certificateAvailable", alternate = ["certificate_available"]) val certificateAvailable: Boolean?
+)
+
+data class CertificateDto(
+    val id: String,
+    @SerializedName(value = "formationId", alternate = ["formation_id"]) val formationId: String?,
+    @SerializedName(value = "formationTitle", alternate = ["formation_title"]) val formationTitle: String?,
+    @SerializedName(value = "learnerName", alternate = ["learner_name"]) val learnerName: String?,
+    @SerializedName(value = "issuedAt", alternate = ["issued_at"]) val issuedAt: String?,
+    @SerializedName(value = "averageScore", alternate = ["average_score"]) val averageScore: Double?,
+    val score: Int?,
+    @SerializedName(value = "maxScore", alternate = ["max_score"]) val maxScore: Int?,
+    @SerializedName(value = "pdfKey", alternate = ["pdf_key"]) val pdfKey: String?,
+    @SerializedName(value = "downloadUrl", alternate = ["download_url", "certificateUrl", "certificate_url"]) val downloadUrl: String?,
+    @SerializedName(value = "verificationCode", alternate = ["verification_code"]) val verificationCode: String?
 )
 
 // ─── Quiz ─────────────────────────────────────────────────────────────────────
@@ -235,9 +381,10 @@ data class NotificationDto(
     val title: String,
     val body: String,
     val type: String,
-    @SerializedName("deep_link") val deepLink: String?,
-    @SerializedName("is_read")   val isRead: Boolean,
-    @SerializedName("created_at") val createdAt: String
+    @SerializedName(value = "deepLink", alternate = ["deep_link"]) val deepLink: String?,
+    val data: String? = null,
+    @SerializedName(value = "isRead", alternate = ["is_read"]) val isRead: Boolean,
+    @SerializedName(value = "createdAt", alternate = ["created_at"]) val createdAt: String
 )
 
 // ─── Paged Response ───────────────────────────────────────────────────────────

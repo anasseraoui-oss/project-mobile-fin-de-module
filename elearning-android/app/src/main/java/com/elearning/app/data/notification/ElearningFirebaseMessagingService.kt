@@ -6,10 +6,16 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
+import com.elearning.app.domain.repository.ProfileRepository
 import com.elearning.app.presentation.MainActivity
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 /**
  * ElearningFirebaseMessagingService — handles incoming FCM push notifications.
@@ -21,6 +27,11 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class ElearningFirebaseMessagingService : FirebaseMessagingService() {
 
+    @Inject
+    lateinit var profileRepository: ProfileRepository
+
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     companion object {
         const val CHANNEL_ID = "elearning_default_channel"
         const val CHANNEL_NAME = "E-Learning Notifications"
@@ -28,6 +39,8 @@ class ElearningFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
+        android.util.Log.d("FCM", "Message received from: ${message.from}")
+        android.util.Log.d("FCM", "Data payload: ${message.data}")
 
         val title = message.notification?.title ?: message.data["title"] ?: "E-Learning"
         val body = message.notification?.body ?: message.data["body"] ?: ""
@@ -38,8 +51,11 @@ class ElearningFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        // TODO: In a real app, call your backend to update the FCM token for the user:
-        // viewModelScope or WorkManager → POST /api/users/fcm-token { token }
+        android.util.Log.d("FCM", "New FCM token generated: $token")
+        serviceScope.launch {
+            val result = profileRepository.updateFcmToken(token)
+            android.util.Log.d("FCM", "Token update result: $result")
+        }
     }
 
     private fun showNotification(title: String, body: String, deepLink: String?) {

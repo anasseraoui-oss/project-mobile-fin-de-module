@@ -85,6 +85,11 @@ services:
       SPRING_PROFILES_ACTIVE: docker,demo
       POSTGRES_HOST: postgres
       REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET}
+      MOBILE_CLIENT_SECRET: ${MOBILE_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      AUTH_SERVER_ISSUER: ${AUTH_PUBLIC_ORIGIN}
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
     depends_on:
       postgres:
         condition: service_healthy
@@ -114,9 +119,10 @@ services:
       POSTGRES_HOST: postgres
       REDIS_HOST: redis
       MINIO_INTERNAL_URL: http://minio:9000
-      MINIO_PUBLIC_URL: http://10.0.2.2:9003
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_ORIGIN}
       AUTH_SERVER_URL: http://auth-server:9000
-      AUTH_SERVER_ISSUER_URI: http://10.0.2.2:9000
+      AUTH_SERVER_ISSUER_URI: ${AUTH_PUBLIC_ORIGIN}
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
     depends_on:
       postgres:
         condition: service_healthy

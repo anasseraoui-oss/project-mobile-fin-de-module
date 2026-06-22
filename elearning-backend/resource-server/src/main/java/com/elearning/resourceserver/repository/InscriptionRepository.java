@@ -18,6 +18,8 @@ public interface InscriptionRepository extends JpaRepository<Inscription, UUID> 
 
     List<Inscription> findByApprenantId(UUID apprenantId);
 
+    List<Inscription> findByFormationIdAndStatus(UUID formationId, InscriptionStatus status);
+
     long countByFormationId(UUID formationId);
 
     long countByFormationIdAndStatus(UUID formationId, InscriptionStatus status);

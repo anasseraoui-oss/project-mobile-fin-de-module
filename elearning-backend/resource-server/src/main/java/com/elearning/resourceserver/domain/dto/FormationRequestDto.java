@@ -24,6 +24,12 @@ public class FormationRequestDto {
     @NotNull(message = "Le prix ne peut pas être nul")
     @PositiveOrZero(message = "Le prix doit être positif ou nul")
     private Double price;
+
+    private String categoryId;
+
+    private List<String> prerequisites;
+
+    private Boolean certified;
     
     private List<UUID> prerequisiteIds;
 }

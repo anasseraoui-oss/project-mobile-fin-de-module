@@ -4,6 +4,8 @@ package com.elearning.resourceserver.domain;
 import com.elearning.resourceserver.domain.enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -30,12 +32,15 @@ public class Notification {
     @Column(columnDefinition = "TEXT")
     private String body;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String data;
 
+    @Builder.Default
     @Column(nullable = false)
     private Boolean isRead = false;
 
+    @Builder.Default
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 }

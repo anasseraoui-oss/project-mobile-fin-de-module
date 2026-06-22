@@ -3,6 +3,7 @@ package com.elearning.resourceserver.application.services;
 import com.elearning.resourceserver.domain.ForumPost;
 import com.elearning.resourceserver.domain.Message;
 import com.elearning.resourceserver.domain.dto.ForumPostDto;
+import com.elearning.resourceserver.domain.dto.MessageDto;
 import com.elearning.resourceserver.repository.ForumPostRepository;
 import com.elearning.resourceserver.repository.MessageRepository;
 import com.elearning.resourceserver.repository.UserRepository;
@@ -36,6 +37,19 @@ public class ChatAndForumService {
         return messageRepository.save(msg);
     }
 
+    public MessageDto sendDirectMessage(UUID senderId, UUID receiverId, String content) {
+        return mapToDto(saveDirectMessage(senderId, receiverId, content));
+    }
+
+    public List<MessageDto> getConversation(UUID currentUserId, UUID otherUserId) {
+        return messageRepository
+                .findBySenderIdAndReceiverIdOrSenderIdAndReceiverIdOrderBySentAtAsc(
+                        currentUserId, otherUserId, otherUserId, currentUserId)
+                .stream()
+                .map(this::mapToDto)
+                .collect(Collectors.toList());
+    }
+
     public ForumPost saveForumPost(UUID authorId, UUID seanceId, String content, UUID parentId) {
         ForumPost post = new ForumPost();
         post.setAuthor(userRepository.getReferenceById(authorId));
@@ -46,6 +60,10 @@ public class ChatAndForumService {
         }
         post.setCreatedAt(LocalDateTime.now());
         return forumPostRepository.save(post);
+    }
+
+    public ForumPostDto createForumPost(UUID authorId, UUID seanceId, String content, UUID parentId) {
+        return mapToDto(saveForumPost(authorId, seanceId, content, parentId));
     }
 
     public List<ForumPostDto> getForumBySeance(UUID seanceId) {
@@ -63,6 +81,17 @@ public class ChatAndForumService {
         dto.setContent(post.getContent());
         dto.setParentId(post.getParent() != null ? post.getParent().getId() : null);
         dto.setCreatedAt(post.getCreatedAt());
+        return dto;
+    }
+
+    private MessageDto mapToDto(Message message) {
+        MessageDto dto = new MessageDto();
+        dto.setId(message.getId());
+        dto.setSenderId(message.getSender() != null ? message.getSender().getId() : null);
+        dto.setReceiverId(message.getReceiver() != null ? message.getReceiver().getId() : null);
+        dto.setContent(message.getContent());
+        dto.setIsRead(message.getIsRead());
+        dto.setSentAt(message.getSentAt());
         return dto;
     }
 }

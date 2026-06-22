@@ -4,6 +4,7 @@ package com.elearning.resourceserver.api;
 import com.elearning.resourceserver.domain.Notification;
 import com.elearning.resourceserver.exceptions.ResourceNotFoundException;
 import com.elearning.resourceserver.repository.NotificationRepository;
+import com.elearning.resourceserver.repository.UserRepository;
 import com.elearning.resourceserver.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class NotificationController {
 
     private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
 
     /**
      * GET /api/v1/me/notifications?page=0&size=20
@@ -44,9 +46,9 @@ public class NotificationController {
         UUID userId = SecurityUtils.getCurrentUserId();
         int updated = notificationRepository.markAsRead(id, userId);
         if (updated == 0) {
-            throw new ResourceNotFoundException("Notification non trouvée");
+            throw new ResourceNotFoundException("Notification non trouvÃ©e");
         }
-        return ResponseEntity.ok(Map.of("message", "Notification marquée comme lue"));
+        return ResponseEntity.ok(Map.of("message", "Notification marquÃ©e comme lue"));
     }
 
     /**
@@ -55,7 +57,7 @@ public class NotificationController {
     @PutMapping("/notifications/read-all")
     public ResponseEntity<?> markAllAsRead() {
         notificationRepository.markAllAsRead(SecurityUtils.getCurrentUserId());
-        return ResponseEntity.ok(Map.of("message", "Toutes les notifications marquées comme lues"));
+        return ResponseEntity.ok(Map.of("message", "Toutes les notifications marquÃ©es comme lues"));
     }
 
     /**
@@ -68,7 +70,7 @@ public class NotificationController {
     }
 
     /**
-     * POST /api/v1/devices/token — Enregistrement FCM token
+     * POST /api/v1/devices/token â€” Enregistrement FCM token
      */
     @PostMapping("/devices/token")
     @PreAuthorize("hasRole('APPRENANT')")
@@ -77,7 +79,12 @@ public class NotificationController {
         if (fcmToken == null || fcmToken.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "FCM token requis"));
         }
-        // FCM token stored on User entity directly
-        return ResponseEntity.ok(Map.of("message", "FCM token enregistré"));
+        userRepository.findById(SecurityUtils.getCurrentUserId())
+                .ifPresent(user -> {
+                    user.setFcmToken(fcmToken);
+                    userRepository.save(user);
+                });
+        return ResponseEntity.ok(Map.of("message", "FCM token enregistre"));
     }
 }
+

@@ -1,0 +1,37 @@
+====================================================
+      COMPTES DE TEST POUR L'APPLICATION (LOGIN)
+====================================================
+
+MOT DE PASSE POUR TOUS LES COMPTES : Demo@1234
+
+----------------------------------------------------
+1. Profil : FORMATEUR (Enseignant/Instructeur)
+----------------------------------------------------
+Nom complet : Sara Chraibi
+Email       : sara.formateur@demo.lms
+Mot de passe: Demo@1234
+
+----------------------------------------------------
+2. Profil : APPRENANT (Étudiants)
+----------------------------------------------------
+-> Apprenant 1 :
+Nom complet : Youssef Mansouri
+Email       : youssef.apprenant@demo.lms
+Mot de passe: Demo@1234
+
+-> Apprenant 2 :
+Nom complet : Lina Berrada
+Email       : lina.apprenante@demo.lms
+Mot de passe: Demo@1234
+
+----------------------------------------------------
+3. Profil : ADMIN_ORG (Administrateur d'organisation)
+----------------------------------------------------
+Nom complet : Nadia El Amrani
+Email       : admin.org@demo.lms
+Mot de passe: Demo@1234
+
+====================================================
+Note: Ces comptes sont générés automatiquement par
+la classe `DemoAuthSeeder` au démarrage du backend.
+====================================================

@@ -1,0 +1,158 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: elearning-postgres-prod
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../../infrastructure/postgres/init-multiple-databases.sql:/docker-entrypoint-initdb.d/init-multiple-databases.sql:ro
+    networks:
+      - backend-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: elearning-redis-prod
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    networks:
+      - backend-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: elearning-minio-prod
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_SERVER_URL: ${MINIO_PUBLIC_ORIGIN}
+      MINIO_BROWSER_REDIRECT_URL: https://minio.example.com
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - backend-net
+      - public-net
+    ports:
+      - "127.0.0.1:${MINIO_API_PORT:-9003}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9001}:9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: elearning-minio-init-prod
+    env_file: .env.prod
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      - backend-net
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
+      /usr/bin/mc mb myminio/elearning-media --ignore-existing;
+      /usr/bin/mc mb myminio/elearning-public --ignore-existing;
+      /usr/bin/mc anonymous set download myminio/elearning-public;
+      /usr/bin/mc mb myminio/elearning-uploads --ignore-existing;
+      /usr/bin/mc ilm add --expiry-days 1 myminio/elearning-uploads || true;
+      exit 0;
+      "
+
+  auth-server:
+    build:
+      context: ../../elearning-backend
+      dockerfile: auth-server/Dockerfile
+    image: ${AUTH_SERVER_IMAGE:-elearning/auth-server:latest}
+    container_name: elearning-auth-server-prod
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+      JWT_SECRET: ${JWT_SECRET}
+      MOBILE_CLIENT_SECRET: ${MOBILE_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      AUTH_SERVER_ISSUER: ${AUTH_PUBLIC_ORIGIN}
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - backend-net
+      - public-net
+    ports:
+      - "127.0.0.1:${AUTH_SERVER_PORT:-9000}:9000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/actuator/health > /dev/null 2>&1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  resource-server:
+    build:
+      context: ../../elearning-backend
+      dockerfile: resource-server/Dockerfile
+    image: ${RESOURCE_SERVER_IMAGE:-elearning/resource-server:latest}
+    container_name: elearning-resource-server-prod
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+      MINIO_INTERNAL_URL: http://minio:9000
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_ORIGIN}
+      AUTH_SERVER_URL: http://auth-server:9000
+      AUTH_SERVER_ISSUER_URI: ${AUTH_PUBLIC_ORIGIN}
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      auth-server:
+        condition: service_healthy
+    networks:
+      - backend-net
+      - public-net
+    ports:
+      - "127.0.0.1:${RESOURCE_SERVER_PORT:-8081}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  backend-net:
+    driver: bridge
+    internal: true
+  public-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  minio_data:

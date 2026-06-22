@@ -34,6 +34,15 @@ public class SecurityUtils {
                 .orElse("");
     }
 
+    public static String getCurrentUserEmail() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof Jwt)) {
+            return null;
+        }
+        var jwt = (Jwt) auth.getPrincipal();
+        return jwt.getClaimAsString("email");
+    }
+
     public static UUID getCurrentOrganisationId() {
         var auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !(auth.getPrincipal() instanceof Jwt)) {
@@ -41,6 +50,6 @@ public class SecurityUtils {
         }
         var jwt = (Jwt) auth.getPrincipal();
         String orgId = jwt.getClaimAsString("organisationId");
-        return orgId != null ? UUID.fromString(orgId) : null;
+        return orgId != null && !orgId.isBlank() ? UUID.fromString(orgId) : null;
     }
 }

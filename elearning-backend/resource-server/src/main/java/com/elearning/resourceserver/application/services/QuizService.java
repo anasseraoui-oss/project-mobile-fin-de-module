@@ -2,6 +2,7 @@ package com.elearning.resourceserver.application.services;
 
 import com.elearning.resourceserver.domain.*;
 import com.elearning.resourceserver.domain.enums.QuizStatus;
+import com.elearning.resourceserver.domain.enums.QuizQuestionType;
 import com.elearning.resourceserver.domain.enums.TentativeQuizStatus;
 import com.elearning.resourceserver.domain.events.QuizSubmittedEvent;
 import com.elearning.resourceserver.domain.events.QuizValidatedEvent;
@@ -9,6 +10,7 @@ import com.elearning.resourceserver.domain.dto.QuizRequestDto;
 import com.elearning.resourceserver.domain.dto.QuizResponseDto;
 import com.elearning.resourceserver.domain.dto.QuizResultDto;
 import com.elearning.resourceserver.domain.dto.QuizSubmitDto;
+import com.elearning.resourceserver.domain.dto.QuizHistoryItemDto;
 import com.elearning.resourceserver.exceptions.AccessDeniedException;
 import com.elearning.resourceserver.exceptions.QuizSessionExpiredException;
 import com.elearning.resourceserver.exceptions.ResourceNotFoundException;
@@ -17,6 +19,7 @@ import com.elearning.resourceserver.repository.*;
 import com.elearning.resourceserver.util.SecurityUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -45,8 +48,10 @@ public class QuizService {
     private final InscriptionRepository inscriptionRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+    private final CertificatRepository certificatRepository;
     private final ObjectMapper objectMapper;
     private final ApplicationEventPublisher eventPublisher;
+    private final EntityManager entityManager;
 
     /**
      * UC-04: GET quiz definition with all precondition checks
@@ -65,16 +70,16 @@ public class QuizService {
                     .orElseThrow(() -> new AccessDeniedException("Cours non accessible"));
 
             if (!progression.getIsUnlocked()) {
-                throw new AccessDeniedException("Ce cours n'est pas encore débloqué. Validez le quiz du cours précédent.");
+                throw new AccessDeniedException("Ce cours n'est pas encore dÃ©bloquÃ©. Validez le quiz du cours prÃ©cÃ©dent.");
             }
 
             // RB-02: Check presenceRate >= presenceThreshold
             Course course = courseRepository.findById(courseId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvé"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvÃ©"));
 
             if (progression.getPresenceRate() < course.getPresenceThreshold()) {
                 throw new AccessDeniedException(
-                        String.format("Présence insuffisante: %.0f%% / %d%% requis",
+                        String.format("PrÃ©sence insuffisante: %.0f%% / %d%% requis",
                                 progression.getPresenceRate(), course.getPresenceThreshold()));
             }
 
@@ -82,7 +87,7 @@ public class QuizService {
             int attempts = tentativeRepository.countByApprenantIdAndQuizId(userId, quiz.getId());
             if (attempts >= quiz.getMaxAttempts()) {
                 throw new ResponseStatusException(HttpStatus.LOCKED,
-                        "Tentatives épuisées. Contactez votre formateur.");
+                        "Tentatives Ã©puisÃ©es. Contactez votre formateur.");
             }
         }
 
@@ -107,26 +112,26 @@ public class QuizService {
                 .orElseThrow(() -> new AccessDeniedException("Cours non accessible"));
 
         if (!progression.getIsUnlocked()) {
-            throw new AccessDeniedException("Ce cours n'est pas encore débloqué.");
+            throw new AccessDeniedException("Ce cours n'est pas encore dÃ©bloquÃ©.");
         }
 
         Course course = courseRepository.findById(courseId).orElse(null);
         if (course != null && progression.getPresenceRate() < course.getPresenceThreshold()) {
             throw new AccessDeniedException(
-                    String.format("Présence insuffisante: %.0f%% / %d%% requis",
+                    String.format("PrÃ©sence insuffisante: %.0f%% / %d%% requis",
                             progression.getPresenceRate(), course.getPresenceThreshold()));
         }
 
         int attempts = tentativeRepository.countByApprenantIdAndQuizId(userId, quizId);
         if (attempts >= quiz.getMaxAttempts()) {
             throw new ResponseStatusException(HttpStatus.LOCKED,
-                    "Tentatives épuisées. Contactez votre formateur.");
+                    "Tentatives Ã©puisÃ©es. Contactez votre formateur.");
         }
 
         // Check no active session
         String redisKey = "quiz:session:" + userId + ":" + quizId;
         if (Boolean.TRUE.equals(redisTemplate.hasKey(redisKey))) {
-            throw new ValidationException("Une session quiz est déjà active");
+            throw new ValidationException("Une session quiz est dÃ©jÃ  active");
         }
 
         // Create TentativeQuiz
@@ -161,26 +166,12 @@ public class QuizService {
 
         String redisKey = "quiz:session:" + userId + ":" + quizId;
         String tentativeIdStr = redisTemplate.opsForValue().get(redisKey);
+        TentativeQuiz tentative = resolveTentativeForSubmit(userId, quizId, dto, tentativeIdStr);
 
-        TentativeQuiz tentative;
-
-        if (tentativeIdStr == null) {
-            // Session expired → find last EN_COURS attempt and fail it
-            tentative = tentativeRepository.findFirstByApprenantIdAndQuizIdAndStatus(
-                    userId, quizId, TentativeQuizStatus.EN_COURS).orElse(null);
-            if (tentative != null) {
-                tentative.setScore(BigDecimal.ZERO);
-                tentative.setStatus(TentativeQuizStatus.ECHOUEE);
-                tentative.setSubmittedAt(LocalDateTime.now());
-                tentativeRepository.save(tentative);
-            }
-            throw new QuizSessionExpiredException("La session du quiz a expiré.");
-        } else {
-            tentative = tentativeRepository.findById(UUID.fromString(tentativeIdStr))
-                    .orElseThrow(() -> new ResourceNotFoundException("Tentative non trouvée"));
+        if (tentative.getStatus() != TentativeQuizStatus.EN_COURS) {
+            return buildResultFromAttempt(quiz, tentative);
         }
 
-        // Calculate score
         int earnedPoints = 0;
         int totalPoints = 0;
         Map<String, String> corrections = new HashMap<>();
@@ -189,23 +180,11 @@ public class QuizService {
             totalPoints += question.getPoints();
             String userAnswer = dto.getAnswers() != null ? dto.getAnswers().get(question.getId().toString()) : null;
 
-            // Find correct answers for this question
             List<QuizReponse> correctReponses = reponseRepository.findCorrectByQuestionId(question.getId());
             String correctAnswerText = correctReponses.isEmpty() ? "" :
                     correctReponses.stream().map(QuizReponse::getText).reduce((a, b) -> a + ", " + b).orElse("");
 
-            boolean isCorrect = false;
-            if (userAnswer != null && !correctReponses.isEmpty()) {
-                for (QuizReponse correct : correctReponses) {
-                    if (correct.getId().toString().equals(userAnswer) ||
-                        correct.getText().equalsIgnoreCase(userAnswer.trim())) {
-                        isCorrect = true;
-                        break;
-                    }
-                }
-            }
-
-            if (isCorrect) {
+            if (isAnswerCorrect(userAnswer, correctReponses)) {
                 earnedPoints += question.getPoints();
             }
             corrections.put(question.getId().toString(), correctAnswerText);
@@ -218,7 +197,6 @@ public class QuizService {
         TentativeQuizStatus status = score.doubleValue() >= quiz.getPassScore() ?
                 TentativeQuizStatus.VALIDEE : TentativeQuizStatus.ECHOUEE;
 
-        // Save attempt
         tentative.setScore(score);
         tentative.setStatus(status);
         tentative.setSubmittedAt(LocalDateTime.now());
@@ -228,41 +206,36 @@ public class QuizService {
             tentative.setAnswersSnapshot("{}");
         }
         tentativeRepository.save(tentative);
-
-        // Delete Redis session
         redisTemplate.delete(redisKey);
 
         UUID coursId = quiz.getCourse().getId();
         UUID formationId = quiz.getCourse().getFormation().getId();
 
-        // Publish QuizSubmittedEvent
         eventPublisher.publishEvent(new QuizSubmittedEvent(
                 this, userId, quizId, coursId, formationId, score, status));
 
-        // If VALIDEE → publish QuizValidatedEvent
         if (status == TentativeQuizStatus.VALIDEE) {
             eventPublisher.publishEvent(new QuizValidatedEvent(
                     this, userId, coursId, formationId, score));
         }
 
-        // Build result
         int newAttempts = tentativeRepository.countByApprenantIdAndQuizId(userId, quizId);
         QuizResultDto result = new QuizResultDto();
         result.setScore(score.intValue());
         result.setPassed(status == TentativeQuizStatus.VALIDEE);
         result.setCorrections(corrections);
         result.setAttemptId(tentative.getId());
-        result.setRemainingAttempts(quiz.getMaxAttempts() - newAttempts);
+        result.setRemainingAttempts(Math.max(0, quiz.getMaxAttempts() - newAttempts));
         return result;
     }
 
     @Transactional(readOnly = true)
     public QuizResultDto getAttemptResults(UUID quizId, UUID attemptId, UUID userId) {
         TentativeQuiz tentative = tentativeRepository.findById(attemptId)
-                .orElseThrow(() -> new ResourceNotFoundException("Tentative non trouvée"));
+                .orElseThrow(() -> new ResourceNotFoundException("Tentative non trouvÃ©e"));
 
         if (!tentative.getApprenantId().equals(userId)) {
-            throw new AccessDeniedException("Accès non autorisé");
+            throw new AccessDeniedException("AccÃ¨s non autorisÃ©");
         }
 
         QuizResultDto result = new QuizResultDto();
@@ -272,12 +245,43 @@ public class QuizService {
         return result;
     }
 
+    @Transactional(readOnly = true)
+    public List<QuizHistoryItemDto> getQuizHistory(UUID userId) {
+        return tentativeRepository.findCompletedHistoryByApprenantId(userId).stream()
+                .map(tentative -> {
+                    Quiz quiz = tentative.getQuiz();
+                    Course course = quiz != null ? quiz.getCourse() : null;
+                    Formation formation = course != null ? course.getFormation() : null;
+                    UUID formationId = formation != null ? formation.getId() : null;
+                    boolean certificateAvailable = formationId != null
+                            && certificatRepository.existsByApprenantIdAndFormationId(userId, formationId);
+
+                    return QuizHistoryItemDto.builder()
+                            .attemptId(tentative.getId())
+                            .quizId(tentative.getQuizId())
+                            .quizTitle(quiz != null ? quiz.getTitle() : "Quiz")
+                            .courseId(course != null ? course.getId() : null)
+                            .courseTitle(course != null ? course.getTitle() : null)
+                            .formationId(formationId)
+                            .formationTitle(formation != null ? formation.getTitle() : null)
+                            .submittedAt(tentative.getSubmittedAt())
+                            .score(tentative.getScore())
+                            .status(tentative.getStatus())
+                            .attemptNumber(tentative.getAttemptNumber())
+                            .passed(tentative.getStatus() == TentativeQuizStatus.VALIDEE)
+                            .certificateAvailable(certificateAvailable)
+                            .build();
+                })
+                .toList();
+    }
+
     public QuizResponseDto createQuiz(QuizRequestDto quizDto, UUID formateurId) {
         Course course = courseRepository.findById(quizDto.getCourseId())
-                .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvé"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvÃ©"));
+        ensureCanManageCourse(course, formateurId);
 
         if (quizRepository.findByCourseId(quizDto.getCourseId()).isPresent()) {
-            throw new ValidationException("Un quiz existe déjà pour ce cours");
+            throw new ValidationException("Un quiz existe dÃ©jÃ  pour ce cours");
         }
 
         Quiz quiz = new Quiz();
@@ -287,17 +291,41 @@ public class QuizService {
         quiz.setMaxAttempts(quizDto.getMaxAttempts() != null ? quizDto.getMaxAttempts() : 3);
         quiz.setTimeLimit(quizDto.getTimeLimit());
         quiz.setIsPublished(false);
+        quiz.setQuestions(buildQuestions(quiz, quizDto.getQuestions()));
 
         Quiz saved = quizRepository.save(quiz);
+        return mapToDto(saved, saved.getMaxAttempts(), true);
+    }
 
-        QuizResponseDto dto = new QuizResponseDto();
-        dto.setId(saved.getId());
-        dto.setCourseId(course.getId());
-        dto.setTitle(saved.getTitle());
-        dto.setPassScore(saved.getPassScore());
-        dto.setMaxAttempts(saved.getMaxAttempts());
-        dto.setTimeLimit(saved.getTimeLimit());
-        return dto;
+    public QuizResponseDto updateQuiz(UUID quizId, QuizRequestDto quizDto, UUID formateurId) {
+        Quiz quiz = quizRepository.findById(quizId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quiz non trouvÃ©"));
+        ensureCanManageCourse(quiz.getCourse(), formateurId);
+
+        if (quizDto.getTitle() != null && !quizDto.getTitle().isBlank()) quiz.setTitle(quizDto.getTitle());
+        if (quizDto.getPassScore() != null) quiz.setPassScore(quizDto.getPassScore());
+        if (quizDto.getMaxAttempts() != null) quiz.setMaxAttempts(quizDto.getMaxAttempts());
+        if (quizDto.getTimeLimit() != null) quiz.setTimeLimit(quizDto.getTimeLimit());
+        if (quizDto.getQuestions() != null) {
+            deleteQuestions(quiz.getId());
+            quiz.setQuestions(buildQuestions(quiz, quizDto.getQuestions()));
+        }
+        Quiz saved = quizRepository.save(quiz);
+        return mapToDto(saved, saved.getMaxAttempts(), true);
+    }
+
+    public void deleteQuiz(UUID quizId, UUID formateurId) {
+        Quiz quiz = quizRepository.findById(quizId)
+                .orElseThrow(() -> new ResourceNotFoundException("Quiz non trouvÃ©"));
+        ensureCanManageCourse(quiz.getCourse(), formateurId);
+        entityManager.createNativeQuery("DELETE FROM quiz_attempts WHERE quiz_id = :id")
+                .setParameter("id", quizId)
+                .executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM tentatives_quiz WHERE quiz_id = :id")
+                .setParameter("id", quizId)
+                .executeUpdate();
+        deleteQuestions(quizId);
+        quizRepository.delete(quiz);
     }
 
     /**
@@ -317,6 +345,196 @@ public class QuizService {
                 progressionRepository.save(progression);
             }
         }
+    }
+    private TentativeQuiz resolveTentativeForSubmit(UUID userId, UUID quizId, QuizSubmitDto dto, String redisTentativeId) {
+        TentativeQuiz tentative = null;
+
+        if (dto != null && dto.getTentativeId() != null) {
+            tentative = tentativeRepository.findById(dto.getTentativeId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Tentative non trouvee"));
+        } else if (redisTentativeId != null && !redisTentativeId.isBlank()) {
+            tentative = tentativeRepository.findById(UUID.fromString(redisTentativeId))
+                    .orElseThrow(() -> new ResourceNotFoundException("Tentative non trouvee"));
+        }
+
+        if (tentative == null) {
+            TentativeQuiz active = tentativeRepository.findFirstByApprenantIdAndQuizIdAndStatus(
+                    userId, quizId, TentativeQuizStatus.EN_COURS).orElse(null);
+            if (active != null) {
+                active.setScore(BigDecimal.ZERO);
+                active.setStatus(TentativeQuizStatus.ECHOUEE);
+                active.setSubmittedAt(LocalDateTime.now());
+                tentativeRepository.save(active);
+                throw new QuizSessionExpiredException("La session du quiz a expire.");
+            }
+            return tentativeRepository.findFirstByApprenantIdAndQuizIdOrderByAttemptNumberDesc(userId, quizId)
+                    .filter(saved -> saved.getStatus() != TentativeQuizStatus.EN_COURS)
+                    .orElseThrow(() -> new QuizSessionExpiredException("La session du quiz a expire."));
+        }
+
+        if (!tentative.getApprenantId().equals(userId) || !tentative.getQuizId().equals(quizId)) {
+            throw new AccessDeniedException("Tentative quiz non autorisee");
+        }
+        return tentative;
+    }
+
+    private QuizResultDto buildResultFromAttempt(Quiz quiz, TentativeQuiz tentative) {
+        int attempts = tentativeRepository.countByApprenantIdAndQuizId(tentative.getApprenantId(), quiz.getId());
+        QuizResultDto result = new QuizResultDto();
+        result.setScore(tentative.getScore() != null ? tentative.getScore().intValue() : 0);
+        result.setPassed(tentative.getStatus() == TentativeQuizStatus.VALIDEE);
+        result.setAttemptId(tentative.getId());
+        result.setRemainingAttempts(Math.max(0, quiz.getMaxAttempts() - attempts));
+        result.setCorrections(Map.of());
+        return result;
+    }
+
+    private boolean isAnswerCorrect(String userAnswer, List<QuizReponse> correctReponses) {
+        Set<String> submitted = parseSubmittedAnswers(userAnswer);
+        if (submitted.isEmpty() || correctReponses == null || correctReponses.isEmpty()) {
+            return false;
+        }
+
+        Set<String> correctIds = new HashSet<>();
+        Set<String> correctTexts = new HashSet<>();
+        Set<String> allCorrectTokens = new HashSet<>();
+        for (QuizReponse correct : correctReponses) {
+            String id = normalizeAnswerToken(correct.getId().toString());
+            String text = normalizeAnswerToken(correct.getText());
+            correctIds.add(id);
+            correctTexts.add(text);
+            allCorrectTokens.add(id);
+            allCorrectTokens.add(text);
+        }
+
+        return submitted.equals(correctIds)
+                || submitted.equals(correctTexts)
+                || (submitted.size() == correctIds.size() && submitted.stream().allMatch(allCorrectTokens::contains));
+    }
+
+    private Set<String> parseSubmittedAnswers(String userAnswer) {
+        if (userAnswer == null || userAnswer.isBlank()) {
+            return Set.of();
+        }
+        try {
+            Object parsed = objectMapper.readValue(userAnswer, Object.class);
+            if (parsed instanceof List<?> list) {
+                Set<String> answers = new HashSet<>();
+                for (Object item : list) {
+                    String token = normalizeAnswerToken(String.valueOf(item));
+                    if (!token.isBlank()) answers.add(token);
+                }
+                return answers;
+            }
+            return Set.of(normalizeAnswerToken(String.valueOf(parsed)));
+        } catch (Exception ignored) {
+            Set<String> answers = new HashSet<>();
+            for (String item : userAnswer.split(",")) {
+                String token = normalizeAnswerToken(item);
+                if (!token.isBlank()) answers.add(token);
+            }
+            return answers;
+        }
+    }
+
+    private String normalizeAnswerToken(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+    private List<QuizQuestion> buildQuestions(Quiz quiz, List<QuizRequestDto.QuestionDto> questionDtos) {
+        if (questionDtos == null || questionDtos.isEmpty()) {
+            throw new ValidationException("Un quiz doit contenir au moins une question");
+        }
+        List<QuizQuestion> questions = new ArrayList<>();
+        int index = 0;
+        for (QuizRequestDto.QuestionDto questionDto : questionDtos) {
+            QuizQuestion question = new QuizQuestion();
+            question.setQuiz(quiz);
+            question.setText(questionDto.getQuestion());
+            question.setType(parseQuestionType(questionDto.getType()));
+            question.setPoints(questionDto.getPoints() != null ? questionDto.getPoints() : 1);
+            question.setOrderIndex(questionDto.getOrderIndex() != null ? questionDto.getOrderIndex() : index++);
+
+            List<String> options = parseStringList(questionDto.getOptions());
+            Set<String> correctAnswers = new HashSet<>(parseStringList(questionDto.getCorrectAnswer()));
+            if (options.isEmpty() && !correctAnswers.isEmpty()) {
+                options = new ArrayList<>(correctAnswers);
+            }
+            if (options.isEmpty()) {
+                throw new ValidationException("Chaque question doit contenir au moins une option");
+            }
+            List<QuizReponse> responses = new ArrayList<>();
+            for (String option : options) {
+                QuizReponse response = new QuizReponse();
+                response.setQuestion(question);
+                response.setText(option);
+                response.setIsCorrect(correctAnswers.contains(option));
+                responses.add(response);
+            }
+            if (responses.stream().noneMatch(response -> Boolean.TRUE.equals(response.getIsCorrect()))) {
+                responses.get(0).setIsCorrect(true);
+            }
+            question.setReponses(responses);
+            questions.add(question);
+        }
+        return questions;
+    }
+
+    private QuizQuestionType parseQuestionType(String value) {
+        if (value == null || value.isBlank()) {
+            return QuizQuestionType.QCM;
+        }
+        return switch (value.trim().toUpperCase()) {
+            case "MCQ", "MULTIPLE_CHOICE", "QCM" -> QuizQuestionType.QCM;
+            case "TRUE_FALSE", "VRAI_FAUX" -> QuizQuestionType.VRAI_FAUX;
+            case "SHORT", "OPEN", "REPONSE_COURTE" -> QuizQuestionType.REPONSE_COURTE;
+            default -> throw new ValidationException("Type de question invalide : " + value);
+        };
+    }
+
+    private List<String> parseStringList(String value) {
+        if (value == null || value.isBlank()) {
+            return List.of();
+        }
+        try {
+            Object parsed = objectMapper.readValue(value, Object.class);
+            if (parsed instanceof List<?> list) {
+                return list.stream().map(String::valueOf).filter(item -> !item.isBlank()).toList();
+            }
+            return List.of(String.valueOf(parsed));
+        } catch (Exception ignored) {
+            return Arrays.stream(value.split(","))
+                    .map(String::trim)
+                    .filter(item -> !item.isBlank())
+                    .toList();
+        }
+    }
+
+    private void deleteQuestions(UUID quizId) {
+        entityManager.createNativeQuery("DELETE FROM quiz_reponses WHERE question_id IN (SELECT id FROM quiz_questions WHERE quiz_id = :id)")
+                .setParameter("id", quizId)
+                .executeUpdate();
+        entityManager.createNativeQuery("DELETE FROM quiz_questions WHERE quiz_id = :id")
+                .setParameter("id", quizId)
+                .executeUpdate();
+        entityManager.flush();
+    }
+
+    private void ensureCanManageCourse(Course course, UUID requesterId) {
+        Formation formation = course.getFormation();
+        if (Objects.equals(formation.getFormateurId(), requesterId)) {
+            return;
+        }
+        if ("ROLE_ADMIN_ORG".equals(SecurityUtils.getCurrentUserRole())) {
+            UUID organisationId = SecurityUtils.getCurrentOrganisationId();
+            if (organisationId == null) {
+                organisationId = userRepository.findById(requesterId).map(User::getOrganisationId).orElse(null);
+            }
+            if (Objects.equals(formation.getOrganisationId(), organisationId)) {
+                return;
+            }
+        }
+        throw new AccessDeniedException("Vous n'Ãªtes pas autorisÃ© Ã  gÃ©rer ce quiz");
     }
 
     private QuizResponseDto mapToDto(Quiz quiz, int remainingAttempts, boolean includeAnswers) {
@@ -361,3 +579,5 @@ public class QuizService {
         return dto;
     }
 }
+
+

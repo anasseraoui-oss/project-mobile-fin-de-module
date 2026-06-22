@@ -13,7 +13,8 @@ import java.io.IOException
 class FormationPagingSource(
     private val api: ResourceApiService,
     private val query: String,
-    private val level: FormationLevel?
+    private val level: FormationLevel?,
+    private val categoryId: String?
 ) : PagingSource<Int, Formation>() {
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Formation> {
@@ -23,7 +24,8 @@ class FormationPagingSource(
                 page = page,
                 size = params.loadSize,
                 search = query.takeIf { it.isNotBlank() },
-                level = level?.name
+                level = level?.name,
+                categoryId = categoryId
             )
             
             val formations = response.content.orEmpty().map { it.toDomainWithCoverUrl() }

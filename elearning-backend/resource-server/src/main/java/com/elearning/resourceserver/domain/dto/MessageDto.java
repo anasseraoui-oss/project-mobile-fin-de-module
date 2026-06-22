@@ -6,8 +6,10 @@ import java.util.UUID;
 
 @Data
 public class MessageDto {
+    private UUID id;
     private UUID senderId;
     private UUID receiverId;
     private String content;
+    private Boolean isRead;
     private LocalDateTime sentAt;
 }

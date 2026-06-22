@@ -22,7 +22,6 @@ interface AuthApiService {
         @Field("username") username: String,
         @Field("password") password: String,
         @Field("client_id") clientId: String = "elearning-mobile-client",
-        @Field("client_secret") clientSecret: String = "elearning-mobile-secret",
         @Field("scope") scope: String = "openid profile email offline_access"
     ): Response<TokenResponseDto>
 

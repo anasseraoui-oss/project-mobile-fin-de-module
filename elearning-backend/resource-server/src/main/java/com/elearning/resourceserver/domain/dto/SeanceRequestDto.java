@@ -18,6 +18,7 @@ public class SeanceRequestDto {
     private Integer duration;
     private LocalDateTime scheduledAt;
     private String meetingLink;
+    private String status;
     
     @NotNull(message = "L'ordre est obligatoire")
     private Integer orderIndex;

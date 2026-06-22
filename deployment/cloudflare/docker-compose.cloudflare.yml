@@ -1,0 +1,30 @@
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: elearning-cloudflared
+    restart: unless-stopped
+    env_file:
+      - .env
+      - ./deployment/cloudflare/.env.cloudflare
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      auth-server:
+        condition: service_healthy
+      resource-server:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    networks:
+      - public-net
+
+  auth-server:
+    environment:
+      AUTH_SERVER_ISSUER: ${AUTH_PUBLIC_ORIGIN}
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+
+  resource-server:
+    environment:
+      AUTH_SERVER_ISSUER_URI: ${AUTH_PUBLIC_ORIGIN}
+      AUTH_SERVER_URL: http://auth-server:9000
+      MINIO_PUBLIC_URL: ${MINIO_PUBLIC_ORIGIN}
+      SERVER_FORWARD_HEADERS_STRATEGY: framework

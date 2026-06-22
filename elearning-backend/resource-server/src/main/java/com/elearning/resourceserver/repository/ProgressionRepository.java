@@ -32,4 +32,11 @@ public interface ProgressionRepository extends JpaRepository<Progression, UUID> 
             @Param("formationId") UUID formationId,
             @Param("apprenantId") UUID apprenantId,
             @Param("quizStatus") QuizStatus quizStatus);
+
+    @Query("SELECT COUNT(p) FROM Progression p " +
+           "WHERE p.formationId = :formationId " +
+           "AND p.quizStatus = :quizStatus")
+    long countByFormationIdAndQuizStatus(
+            @Param("formationId") UUID formationId,
+            @Param("quizStatus") QuizStatus quizStatus);
 }

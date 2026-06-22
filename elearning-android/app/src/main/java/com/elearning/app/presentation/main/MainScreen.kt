@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.material3.windowsizeclass.WindowSizeClass
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,16 +22,37 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.elearning.app.presentation.auth.AuthEvent
+import com.elearning.app.presentation.auth.AuthViewModel
 import com.elearning.app.presentation.theme.AnimDuration
 
 @Composable
 fun MainScreen(
     windowSizeClass: WindowSizeClass,
+    authViewModel: AuthViewModel,
+    pendingDeepLink: String? = null,
+    onPendingDeepLinkConsumed: () -> Unit = {},
     onLogout: () -> Unit = {}
 ) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    // Handle Deep Links
+    LaunchedEffect(authViewModel.events) {
+        authViewModel.events.collect { event ->
+            if (event is AuthEvent.NavigateDeepLink) {
+                navController.navigateResolvedDeepLink(event.route)
+            }
+        }
+    }
+
+    LaunchedEffect(pendingDeepLink) {
+        if (!pendingDeepLink.isNullOrBlank()) {
+            navController.navigateResolvedDeepLink(pendingDeepLink)
+            onPendingDeepLinkConsumed()
+        }
+    }
 
     // Responsive rule: Compact -> BottomBar, Medium/Expanded (Tablet) -> NavigationRail
     val isCompact = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
@@ -70,6 +92,12 @@ fun MainScreen(
             }
         }
     }
+}
+
+private fun NavHostController.navigateResolvedDeepLink(deepLink: String) {
+    val route = MainRoutes.resolveDeepLink(deepLink)
+    android.util.Log.d("DeepLinkNav", "Received deep link=$deepLink, resolved=$route")
+    route?.let { navigate(it) }
 }
 
 @Composable

@@ -59,6 +59,12 @@ public class Formation {
     @Column(columnDefinition = "TEXT")
     private String prerequisitesText;
 
+    @Column(name = "category_id")
+    private String categoryId;
+
+    @Column(nullable = false)
+    private Boolean certified = false;
+
     @OneToMany(mappedBy = "formation", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Course> courses;
 

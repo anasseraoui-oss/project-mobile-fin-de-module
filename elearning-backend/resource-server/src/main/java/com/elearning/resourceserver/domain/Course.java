@@ -33,10 +33,10 @@ public class Course {
     private CoursStatus status = CoursStatus.A_VENIR;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "formation_id")
+    @JoinColumn(name = "formation_id", nullable = false)
     private Formation formation;
 
-    @Column(name = "formation_id", insertable = false, updatable = false)
+    @Column(name = "formation_id", insertable = false, updatable = false, nullable = false)
     private UUID formationId;
 
     @Column(nullable = false)

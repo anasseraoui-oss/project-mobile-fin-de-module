@@ -155,13 +155,13 @@ private fun InitialsBadge(
 
 @Composable
 private fun UserRole.badgeColor(): Color = when (this) {
-    UserRole.ADMIN      -> MaterialTheme.colorScheme.error
-    UserRole.FORMATEUR  -> MaterialTheme.colorScheme.tertiary
-    UserRole.APPRENANT  -> MaterialTheme.colorScheme.secondary
+    UserRole.ADMIN, UserRole.ADMIN_ORG, UserRole.SUPER_ADMIN -> MaterialTheme.colorScheme.error
+    UserRole.FORMATEUR -> MaterialTheme.colorScheme.tertiary
+    UserRole.APPRENANT -> MaterialTheme.colorScheme.secondary
 }
 
 private fun UserRole.badgeIcon(): ImageVector = when (this) {
-    UserRole.ADMIN     -> Icons.Default.AdminPanelSettings
+    UserRole.ADMIN, UserRole.ADMIN_ORG, UserRole.SUPER_ADMIN -> Icons.Default.AdminPanelSettings
     UserRole.FORMATEUR -> Icons.Default.School
     UserRole.APPRENANT -> Icons.Default.Person
 }

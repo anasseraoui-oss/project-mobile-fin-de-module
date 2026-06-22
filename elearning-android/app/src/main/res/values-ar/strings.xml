@@ -33,6 +33,42 @@
     <string name="nav_notifications">الإشعارات</string>
     <string name="nav_admin">الإدارة</string>
 
+    <!-- Formation -->
+    <string name="label_enrolled">مسجل</string>
+    <string name="label_enroll">تسجيل</string>
+    <string name="label_progress">التقدم</string>
+    <string name="label_duration">المدة</string>
+    <string name="label_level">المستوى</string>
+    <string name="label_language">اللغة</string>
+    <string name="label_rating">التقييم</string>
+    <string name="label_students">طلاب</string>
+
+    <!-- Levels -->
+    <string name="level_debutant">مبتدئ</string>
+    <string name="level_intermediaire">متوسط</string>
+    <string name="level_avance">متقدم</string>
+
+    <!-- Quiz -->
+    <string name="label_quiz">اختبار</string>
+    <string name="label_start_quiz">بدء الاختبار</string>
+    <string name="label_submit_quiz">إرسال</string>
+    <string name="label_score">النتيجة</string>
+    <string name="label_passed">ناجح</string>
+    <string name="label_failed">راسب</string>
+    <string name="label_time_remaining">الوقت المتبقي</string>
+    <string name="label_question">سؤال</string>
+    <string name="label_download_certificate">تحميل الشهادة</string>
+
+    <!-- QR -->
+    <string name="label_scan_qr">مسح رمز QR</string>
+    <string name="label_generate_qr">إنشاء رمز QR</string>
+    <string name="label_qr_valid_for">صالح لمدة 5 دقائق</string>
+
+    <!-- Notifications -->
+    <string name="label_notifications">الإشعارات</string>
+    <string name="label_mark_all_read">تحديد الكل كمقروء</string>
+    <string name="label_no_notifications">لا توجد إشعارات</string>
+
     <!-- Offline -->
     <string name="label_offline_mode">وضع عدم الاتصال</string>
     <string name="label_syncing">جارٍ المزامنة…</string>

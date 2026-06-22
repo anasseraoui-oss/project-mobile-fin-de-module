@@ -18,6 +18,9 @@ interface FormationDao {
     @Query("SELECT * FROM formations WHERE is_enrolled = 1 ORDER BY title ASC")
     suspend fun findEnrolled(): List<FormationEntity>
 
+    @Query("SELECT * FROM formations WHERE is_enrolled = 1 ORDER BY title ASC")
+    fun observeEnrolled(): Flow<List<FormationEntity>>
+
     @Query("""
         SELECT * FROM formations 
         WHERE (:query = '' OR title LIKE '%' || :query || '%' OR description LIKE '%' || :query || '%')

@@ -32,8 +32,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
+import com.elearning.authserver.security.client.PublicMobileClientAuthenticationConverter;
+import com.elearning.authserver.security.client.PublicMobileClientAuthenticationProvider;
 import com.elearning.authserver.security.passwordgrant.CustomPasswordAuthenticationConverter;
 import com.elearning.authserver.security.passwordgrant.CustomPasswordAuthenticationProvider;
+import com.elearning.authserver.security.passwordgrant.CustomRefreshTokenAuthenticationConverter;
+import com.elearning.authserver.security.passwordgrant.CustomRefreshTokenAuthenticationProvider;
 
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -58,10 +62,20 @@ public class AuthorizationServerConfig {
         
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
             .oidc(Customizer.withDefaults()) // Enable OpenID Connect 1.0
+            .clientAuthentication(clientAuthentication -> clientAuthentication
+                .authenticationConverters(converters ->
+                        converters.add(0, new PublicMobileClientAuthenticationConverter()))
+                .authenticationProvider(new PublicMobileClientAuthenticationProvider(registeredClientRepository))
+            )
             .tokenEndpoint(endpoint -> endpoint
-                .accessTokenRequestConverter(new CustomPasswordAuthenticationConverter())
+                .accessTokenRequestConverters(converters -> {
+                    converters.add(0, new CustomRefreshTokenAuthenticationConverter());
+                    converters.add(new CustomPasswordAuthenticationConverter());
+                })
                 .authenticationProvider(new CustomPasswordAuthenticationProvider(
                         authenticationManager, authorizationService, tokenGenerator, registeredClientRepository))
+                .authenticationProvider(new CustomRefreshTokenAuthenticationProvider(
+                        authorizationService, tokenGenerator, registeredClientRepository))
             );
 
         http

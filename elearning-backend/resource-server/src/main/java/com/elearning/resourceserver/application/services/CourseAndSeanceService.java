@@ -9,12 +9,15 @@ import com.elearning.resourceserver.domain.dto.ProgressResponseDto;
 import com.elearning.resourceserver.domain.dto.ProgressUpdateRequest;
 import com.elearning.resourceserver.domain.dto.SeanceRequestDto;
 import com.elearning.resourceserver.domain.dto.SeanceResponseDto;
+import com.elearning.resourceserver.domain.dto.SeanceTextContentRequestDto;
 import com.elearning.resourceserver.exceptions.AccessDeniedException;
 import com.elearning.resourceserver.exceptions.ResourceNotFoundException;
 import com.elearning.resourceserver.exceptions.ValidationException;
 import com.elearning.resourceserver.infrastructure.minio.MinioService;
 import com.elearning.resourceserver.repository.*;
+import com.elearning.resourceserver.util.SecurityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -26,6 +29,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -37,6 +41,7 @@ import java.util.stream.Collectors;
 public class CourseAndSeanceService {
 
     private final CourseRepository courseRepository;
+    private final FormationRepository formationRepository;
     private final SeanceRepository seanceRepository;
     private final InscriptionRepository inscriptionRepository;
     private final ProgressionRepository progressionRepository;
@@ -46,15 +51,21 @@ public class CourseAndSeanceService {
     private final MinioService minioService;
     private final NotificationService notificationService;
     private final ObjectMapper objectMapper;
+    private final EntityManager entityManager;
 
     private static final Set<String> ALLOWED_VIDEO_FORMATS = Set.of(
             "video/mp4", "video/webm", "video/quicktime"
     );
     private static final long MAX_VIDEO_SIZE = 2L * 1024 * 1024 * 1024; // 2GB
+    private static final int STREAM_URL_EXPIRY_MINUTES = 240;
+    private static final int STREAM_URL_REFRESH_AFTER_SECONDS = 1800;
 
     public List<CourseResponseDto> getCoursesByFormation(UUID formationId, UUID userId, String role) {
+        Formation formation = formationRepository.findById(formationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Formation non trouvee"));
+        ensureCanReadFormation(formation, userId, role);
         if ("ROLE_APPRENANT".equals(role) && !inscriptionRepository.existsByApprenantIdAndFormationId(userId, formationId)) {
-            throw new AccessDeniedException("Inscription requise pour accéder à ces cours");
+            throw new AccessDeniedException("Inscription requise pour accÃ©der Ã  ces cours");
         }
 
         return courseRepository.findByFormationIdOrderByOrderIndex(formationId)
@@ -87,12 +98,9 @@ public class CourseAndSeanceService {
 
     public List<SeanceResponseDto> getSeancesByCourse(UUID courseId, UUID userId, String role) {
         Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvé"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvÃ©"));
 
-        UUID formationId = course.getFormation().getId();
-        if ("ROLE_APPRENANT".equals(role) && !inscriptionRepository.existsByApprenantIdAndFormationId(userId, formationId)) {
-            throw new AccessDeniedException("Inscription requise pour accéder à ces séances");
-        }
+        ensureCanReadFormation(course.getFormation(), userId, role);
 
         return seanceRepository.findByCoursIdOrderByOrderIndex(courseId)
                 .stream()
@@ -102,19 +110,24 @@ public class CourseAndSeanceService {
 
     public SeanceResponseDto getSeance(UUID seanceId, UUID userId, String role) {
         Seance seance = seanceRepository.findById(seanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Séance non trouvée"));
-        UUID formationId = seance.getCourse().getFormation().getId();
-        if ("ROLE_APPRENANT".equals(role) && !inscriptionRepository.existsByApprenantIdAndFormationId(userId, formationId)) {
-            throw new AccessDeniedException("Inscription requise pour accéder à cette séance");
-        }
+                .orElseThrow(() -> new ResourceNotFoundException("SÃ©ance non trouvÃ©e"));
+        ensureCanReadFormation(seance.getCourse().getFormation(), userId, role);
         return mapSeanceToDto(seance, userId);
     }
 
     public CourseResponseDto createCourse(CourseRequestDto dto, UUID formateurId) {
+        if (dto.getFormationId() == null) {
+            throw new ValidationException("L'ID de la formation est obligatoire");
+        }
+
+        Formation formation = formationRepository.findById(dto.getFormationId())
+                .orElseThrow(() -> new ResourceNotFoundException("Formation non trouvÃ©e"));
+        ensureCanManageFormation(formation, formateurId);
+
         Course course = new Course();
         course.setTitle(dto.getTitle());
         course.setDescription(dto.getDescription());
-        course.setFormationId(dto.getFormationId());
+        course.setFormation(formation);
         course.setOrderIndex(dto.getOrderIndex());
         if (dto.getPresenceThreshold() != null) course.setPresenceThreshold(dto.getPresenceThreshold());
         if (dto.getQuizPassScore() != null) course.setQuizPassScore(dto.getQuizPassScore());
@@ -122,14 +135,44 @@ public class CourseAndSeanceService {
 
         Course saved = courseRepository.save(course);
 
-        CourseResponseDto response = new CourseResponseDto();
-        response.setId(saved.getId());
-        response.setTitle(saved.getTitle());
-        response.setDescription(saved.getDescription());
-        response.setOrderIndex(saved.getOrderIndex());
-        response.setFormationId(saved.getFormationId());
-        response.setStatus(saved.getStatus().name());
-        return response;
+        return mapCourseToDto(saved);
+    }
+
+    public CourseResponseDto updateCourse(UUID courseId, CourseRequestDto dto, UUID requesterId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvÃ©"));
+        ensureCanManageFormation(course.getFormation(), requesterId);
+
+        if (dto.getTitle() != null && !dto.getTitle().isBlank()) course.setTitle(dto.getTitle());
+        if (dto.getDescription() != null) course.setDescription(dto.getDescription());
+        if (dto.getOrderIndex() != null) course.setOrderIndex(dto.getOrderIndex());
+        if (dto.getPresenceThreshold() != null) course.setPresenceThreshold(dto.getPresenceThreshold());
+        if (dto.getQuizPassScore() != null) course.setQuizPassScore(dto.getQuizPassScore());
+        if (dto.getEstimatedDuration() != null) course.setEstimatedDuration(dto.getEstimatedDuration());
+        if (dto.getStatus() != null && !dto.getStatus().isBlank()) {
+            try {
+                course.setStatus(com.elearning.resourceserver.domain.enums.CoursStatus.valueOf(dto.getStatus()));
+            } catch (IllegalArgumentException e) {
+                throw new ValidationException("Statut de module invalide");
+            }
+        }
+        return mapCourseToDto(courseRepository.save(course));
+    }
+
+    public void deleteCourse(UUID courseId, UUID requesterId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvÃ©"));
+        ensureCanManageFormation(course.getFormation(), requesterId);
+
+        seanceRepository.findByCoursId(courseId).forEach(seance -> deleteSeanceInternal(seance));
+        deleteCourseResources(courseId);
+        executeDelete("DELETE FROM quiz_attempts WHERE quiz_id IN (SELECT id FROM quizzes WHERE course_id = :id)", courseId);
+        executeDelete("DELETE FROM tentatives_quiz WHERE quiz_id IN (SELECT id FROM quizzes WHERE course_id = :id)", courseId);
+        executeDelete("DELETE FROM quiz_reponses WHERE question_id IN (SELECT qq.id FROM quiz_questions qq JOIN quizzes q ON qq.quiz_id = q.id WHERE q.course_id = :id)", courseId);
+        executeDelete("DELETE FROM quiz_questions WHERE quiz_id IN (SELECT id FROM quizzes WHERE course_id = :id)", courseId);
+        executeDelete("DELETE FROM quizzes WHERE course_id = :id", courseId);
+        executeDelete("DELETE FROM progressions WHERE cours_id = :id", courseId);
+        courseRepository.delete(course);
     }
 
     public SeanceResponseDto createSeance(UUID courseId, String seanceDataJson, MultipartFile video, UUID formateurId) {
@@ -138,8 +181,12 @@ public class CourseAndSeanceService {
 
             SeanceType type = SeanceType.valueOf(dto.getType());
             if (type == SeanceType.LIVE && (dto.getMeetingLink() == null || dto.getMeetingLink().isEmpty())) {
-                throw new ValidationException("Lien meeting obligatoire pour une séance live");
+                throw new ValidationException("Lien meeting obligatoire pour une sÃ©ance live");
             }
+
+            Course course = courseRepository.findById(courseId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Cours non trouvÃ©"));
+            ensureCanManageFormation(course.getFormation(), formateurId);
 
             Seance seance = new Seance();
             seance.setTitle(dto.getTitle());
@@ -149,10 +196,14 @@ public class CourseAndSeanceService {
             seance.setMeetingLink(dto.getMeetingLink());
             seance.setDuration(dto.getDuration());
             seance.setOrderIndex(dto.getOrderIndex());
-            seance.setCoursId(courseId);
+            seance.setCourse(course);
             seance.setFormateurId(formateurId);
 
             Seance saved = seanceRepository.save(seance);
+            if (video != null && !video.isEmpty()) {
+                uploadVideo(saved.getId(), video, formateurId);
+                saved = seanceRepository.findById(saved.getId()).orElse(saved);
+            }
 
             SeanceResponseDto res = new SeanceResponseDto();
             res.setId(saved.getId());
@@ -164,13 +215,52 @@ public class CourseAndSeanceService {
             res.setMeetingLink(saved.getMeetingLink());
             res.setOrderIndex(saved.getOrderIndex());
             res.setDurationSeconds(saved.getDuration());
+            res.setVideoKey(saved.getVideoKey());
             return res;
 
-        } catch (ValidationException ve) {
+        } catch (ValidationException | AccessDeniedException | ResourceNotFoundException ve) {
             throw ve;
         } catch (Exception e) {
-            throw new ValidationException("Erreur de création de séance : " + e.getMessage());
+            throw new ValidationException("Erreur de crÃ©ation de sÃ©ance : " + e.getMessage());
         }
+    }
+
+    public SeanceResponseDto updateSeance(UUID seanceId, SeanceRequestDto dto, UUID requesterId) {
+        Seance seance = seanceRepository.findById(seanceId)
+                .orElseThrow(() -> new ResourceNotFoundException("SÃ©ance non trouvÃ©e"));
+        ensureCanManageFormation(seance.getCourse().getFormation(), requesterId);
+
+        if (dto.getTitle() != null && !dto.getTitle().isBlank()) seance.setTitle(dto.getTitle());
+        if (dto.getDescription() != null) seance.setDescription(dto.getDescription());
+        if (dto.getType() != null && !dto.getType().isBlank()) {
+            try {
+                seance.setType(SeanceType.valueOf(dto.getType()));
+            } catch (IllegalArgumentException e) {
+                throw new ValidationException("Type de sÃ©ance invalide");
+            }
+        }
+        if (seance.getType() == SeanceType.LIVE && dto.getMeetingLink() != null && dto.getMeetingLink().isBlank()) {
+            throw new ValidationException("Lien meeting obligatoire pour une sÃ©ance live");
+        }
+        if (dto.getDuration() != null) seance.setDuration(dto.getDuration());
+        if (dto.getScheduledAt() != null) seance.setScheduledAt(dto.getScheduledAt());
+        if (dto.getMeetingLink() != null) seance.setMeetingLink(dto.getMeetingLink());
+        if (dto.getOrderIndex() != null) seance.setOrderIndex(dto.getOrderIndex());
+        if (dto.getStatus() != null && !dto.getStatus().isBlank()) {
+            try {
+                seance.setStatus(SeanceStatus.valueOf(dto.getStatus()));
+            } catch (IllegalArgumentException e) {
+                throw new ValidationException("Statut de sÃ©ance invalide");
+            }
+        }
+        return mapSeanceToDto(seanceRepository.save(seance), requesterId);
+    }
+
+    public void deleteSeance(UUID seanceId, UUID requesterId) {
+        Seance seance = seanceRepository.findById(seanceId)
+                .orElseThrow(() -> new ResourceNotFoundException("SÃ©ance non trouvÃ©e"));
+        ensureCanManageFormation(seance.getCourse().getFormation(), requesterId);
+        deleteSeanceInternal(seance);
     }
 
     /**
@@ -178,40 +268,48 @@ public class CourseAndSeanceService {
      */
     public void startSeance(UUID seanceId, UUID formateurId) {
         Seance seance = seanceRepository.findById(seanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Séance non trouvée"));
+                .orElseThrow(() -> new ResourceNotFoundException("Seance non trouvee"));
 
-        if (!seance.getFormateurId().equals(formateurId)) {
-            throw new AccessDeniedException("Vous n'êtes pas le formateur de cette séance");
-        }
+        ensureCanManageFormation(seance.getCourse().getFormation(), formateurId);
 
         if (seance.getType() != SeanceType.LIVE) {
-            throw new ValidationException("Seule une séance LIVE peut être démarrée");
+            throw new ValidationException("Seule une seance LIVE peut etre demarree");
         }
 
-        // Check scheduled time window ±30min
         if (seance.getScheduledAt() != null) {
             LocalDateTime now = LocalDateTime.now();
             if (now.isBefore(seance.getScheduledAt().minusMinutes(30))
                     || now.isAfter(seance.getScheduledAt().plusMinutes(30))) {
-                throw new ValidationException("La séance ne peut être démarrée que dans un intervalle de ±30 minutes de l'heure prévue");
+                throw new ValidationException("La seance ne peut etre demarree que dans un intervalle de +/-30 minutes de l'heure prevue");
             }
         }
 
         seance.setStatus(SeanceStatus.EN_COURS);
         seanceRepository.save(seance);
+
+        UUID formationId = seance.getCourse().getFormation().getId();
+        notificationService.sendToFormationSubscribers(
+                formationId,
+                "Seance live demarree",
+                "La seance '" + seance.getTitle() + "' vient de demarrer.",
+                Map.of(
+                        "type", "LIVE_REMINDER",
+                        "seanceId", seanceId.toString(),
+                        "formationId", formationId.toString(),
+                        "deepLink", "player/" + seanceId
+                ),
+                "live-started:" + seanceId
+        );
     }
     
     public ProgressResponseDto updateProgress(UUID seanceId, UUID userId, ProgressUpdateRequest request) {
         Seance seance = seanceRepository.findById(seanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Séance non trouvée"));
+                .orElseThrow(() -> new ResourceNotFoundException("SÃ©ance non trouvÃ©e"));
 
-        UUID formationId = seance.getCourse().getFormation().getId();
-        if (!inscriptionRepository.existsByApprenantIdAndFormationId(userId, formationId)) {
-            throw new AccessDeniedException("Vous n'êtes pas inscrit à cette formation");
-        }
+        ensureCanReadFormation(seance.getCourse().getFormation(), userId, SecurityUtils.getCurrentUserRole());
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvé"));
+                .orElseThrow(() -> new ResourceNotFoundException("Utilisateur non trouvÃ©"));
 
         int incomingSeconds = request.getWatchedSeconds() != null
                 ? request.getWatchedSeconds()
@@ -257,42 +355,33 @@ public class CourseAndSeanceService {
      */
     public void endSeance(UUID seanceId, UUID formateurId) {
         Seance seance = seanceRepository.findById(seanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Séance non trouvée"));
+                .orElseThrow(() -> new ResourceNotFoundException("SÃ©ance non trouvÃ©e"));
 
-        if (!seance.getFormateurId().equals(formateurId)) {
-            throw new AccessDeniedException("Vous n'êtes pas le formateur de cette séance");
-        }
+        ensureCanManageFormation(seance.getCourse().getFormation(), formateurId);
 
         seance.setStatus(SeanceStatus.TERMINEE);
         seanceRepository.save(seance);
     }
 
     /**
-     * UC-03: Upload vidéo post-séance (RB-03)
+     * UC-03: Upload vidÃ©o post-sÃ©ance (RB-03)
      */
     public void uploadVideo(UUID seanceId, MultipartFile video, UUID formateurId) {
         Seance seance = seanceRepository.findById(seanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Séance non trouvée"));
+                .orElseThrow(() -> new ResourceNotFoundException("SÃ©ance non trouvÃ©e"));
 
         // Step 1: Verify ownership
-        if (!seance.getFormateurId().equals(formateurId)) {
-            throw new AccessDeniedException("Vous n'êtes pas le formateur de cette séance");
-        }
+        ensureCanManageFormation(seance.getCourse().getFormation(), formateurId);
 
-        // Step 2: RB-03 — seance.status must be TERMINEE
-        if (seance.getStatus() != SeanceStatus.TERMINEE) {
-            throw new ValidationException("La séance doit être terminée avant d'uploader une vidéo");
-        }
-
-        // Step 3: Validate format
+        // Step 2: Validate format
         String contentType = video.getContentType();
         if (contentType == null || !ALLOWED_VIDEO_FORMATS.contains(contentType)) {
-            throw new ValidationException("Format non supporté. Formats acceptés : mp4, webm, mov");
+            throw new ValidationException("Format non supportÃ©. Formats acceptÃ©s : mp4, webm, mov");
         }
 
-        // Step 4: Validate size
+        // Step 3: Validate size
         if (video.getSize() > MAX_VIDEO_SIZE) {
-            throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "La vidéo ne doit pas dépasser 2 Go");
+            throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "La vidÃ©o ne doit pas dÃ©passer 2 Go");
         }
 
         try {
@@ -302,56 +391,80 @@ public class CourseAndSeanceService {
             minioService.moveObject("elearning-uploads", tempKey, "elearning-media", finalKey);
 
             // Step 8-9: Update seance
+            String previousKey = seance.getVideoKey();
             seance.setVideoKey(finalKey);
             seance.setStatus(SeanceStatus.CONTENU_DISPONIBLE);
             seanceRepository.save(seance);
+            deleteObjectBestEffort("elearning-media", previousKey);
 
             // Step 10: Notification
             UUID formationId = seance.getCourse().getFormation().getId();
-            notificationService.sendToTopic("formation_" + formationId,
+            notificationService.sendToFormationSubscribers(formationId,
                     "Nouvel enregistrement disponible",
-                    "Un nouvel enregistrement est disponible pour la séance '" + seance.getTitle() + "'",
-                    Map.of("type", "VIDEO_AVAILABLE", "seanceId", seanceId.toString()));
+                    "Un nouvel enregistrement est disponible pour la seance '" + seance.getTitle() + "'",
+                    Map.of("type", "VIDEO_AVAILABLE", "seanceId", seanceId.toString(), "formationId", formationId.toString(), "deepLink", "player/" + seanceId),
+                    "video-available:" + seanceId);
 
         } catch (Exception e) {
-            throw new ValidationException("Erreur lors de l'upload vidéo : " + e.getMessage());
+            throw new ValidationException("Erreur lors de l'upload vidÃ©o : " + e.getMessage());
         }
+    }
+
+    public void updateSeanceTextContent(UUID seanceId, SeanceTextContentRequestDto request, UUID formateurId) {
+        Seance seance = seanceRepository.findById(seanceId)
+                .orElseThrow(() -> new ResourceNotFoundException("SÃ©ance non trouvÃ©e"));
+
+        ensureCanManageFormation(seance.getCourse().getFormation(), formateurId);
+
+        seance.setDescription(request != null ? request.getContent() : null);
+        seanceRepository.save(seance);
+    }
+
+    public void deleteVideo(UUID seanceId, UUID requesterId) {
+        Seance seance = seanceRepository.findById(seanceId)
+                .orElseThrow(() -> new ResourceNotFoundException("SÃ©ance non trouvÃ©e"));
+        ensureCanManageFormation(seance.getCourse().getFormation(), requesterId);
+        deleteObjectBestEffort("elearning-media", seance.getVideoKey());
+        seance.setVideoKey(null);
+        if (seance.getStatus() == SeanceStatus.CONTENU_DISPONIBLE) {
+            seance.setStatus(SeanceStatus.PLANIFIEE);
+        }
+        seanceRepository.save(seance);
     }
 
     public Map<String, String> getStreamUrl(UUID seanceId, UUID userId) {
         Seance seance = seanceRepository.findById(seanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Séance non trouvée"));
+                .orElseThrow(() -> new ResourceNotFoundException("Seance non trouvee"));
 
-        UUID formationId = seance.getCourse().getFormation().getId();
-        if (!inscriptionRepository.existsByApprenantIdAndFormationId(userId, formationId)) {
-            throw new AccessDeniedException("Vous n'êtes pas inscrit à cette formation");
-        }
+        ensureCanReadFormation(seance.getCourse().getFormation(), userId, SecurityUtils.getCurrentUserRole());
 
         if (seance.getVideoKey() == null) {
-            throw new ResourceNotFoundException("Pas de vidéo pour cette séance");
+            throw new ResourceNotFoundException("Pas de video pour cette seance");
+        }
+        if (!minioService.objectExists("elearning-media", seance.getVideoKey())) {
+            throw new ResourceNotFoundException("Video indisponible dans le stockage");
         }
 
         try {
-            String url = minioService.generatePresignedUrl("elearning-media", seance.getVideoKey(), 15);
+            String url = minioService.generatePresignedUrl("elearning-media", seance.getVideoKey(), STREAM_URL_EXPIRY_MINUTES);
             return Map.of(
                     "url", url,
                     "stream_url", url,
-                    "expiresInMinutes", "15",
-                    "expires_at", LocalDateTime.now().plusMinutes(15).toString()
+                    "expiresInMinutes", String.valueOf(STREAM_URL_EXPIRY_MINUTES),
+                    "expires_in_seconds", String.valueOf(STREAM_URL_EXPIRY_MINUTES * 60),
+                    "refresh_after_seconds", String.valueOf(STREAM_URL_REFRESH_AFTER_SECONDS),
+                    "expires_at", LocalDateTime.now().plusMinutes(STREAM_URL_EXPIRY_MINUTES).toString()
             );
         } catch (Exception e) {
-            throw new ValidationException("Erreur lors de la génération de l'URL : " + e.getMessage());
+            throw new ValidationException("Erreur lors de la generation de l'URL : " + e.getMessage());
         }
     }
 
     public Map<String, String> getPdfUrl(UUID seanceId, UUID userId) {
         Seance seance = seanceRepository.findById(seanceId)
-                .orElseThrow(() -> new ResourceNotFoundException("Séance non trouvée"));
+                .orElseThrow(() -> new ResourceNotFoundException("SÃ©ance non trouvÃ©e"));
 
-        UUID formationId = seance.getCourse().getFormation().getId();
-        if (!inscriptionRepository.existsByApprenantIdAndFormationId(userId, formationId)) {
-            throw new AccessDeniedException("Vous n'êtes pas inscrit à cette formation");
-        }
+        ensureCanReadFormation(seance.getCourse().getFormation(), userId, SecurityUtils.getCurrentUserRole());
 
         // Assume PDF resources are stored alongside video
         try {
@@ -372,7 +485,7 @@ public class CourseAndSeanceService {
                     "expiresInMinutes", "60"
             );
         } catch (Exception e) {
-            throw new ResourceNotFoundException("Pas de ressource PDF pour cette séance");
+            throw new ResourceNotFoundException("Pas de ressource PDF pour cette sÃ©ance");
         }
     }
 
@@ -416,4 +529,108 @@ public class CourseAndSeanceService {
         }
         return percent;
     }
+
+    private CourseResponseDto mapCourseToDto(Course course) {
+        CourseResponseDto response = new CourseResponseDto();
+        response.setId(course.getId());
+        response.setTitle(course.getTitle());
+        response.setDescription(course.getDescription());
+        response.setOrderIndex(course.getOrderIndex());
+        response.setFormationId(course.getFormation().getId());
+        response.setStatus(course.getStatus().name());
+        response.setPresenceThreshold(course.getPresenceThreshold());
+        response.setSeancesCount((int) seanceRepository.countByCoursId(course.getId()));
+        return response;
+    }
+
+    private void ensureCanManageFormation(Formation formation, UUID requesterId) {
+        if (Objects.equals(formation.getFormateurId(), requesterId)) {
+            return;
+        }
+        String role = SecurityUtils.getCurrentUserRole();
+        if ("ROLE_ADMIN_ORG".equals(role)) {
+            UUID organisationId = SecurityUtils.getCurrentOrganisationId();
+            if (organisationId == null) {
+                organisationId = userRepository.findById(requesterId)
+                        .map(User::getOrganisationId)
+                        .orElse(null);
+            }
+            if (Objects.equals(formation.getOrganisationId(), organisationId)) {
+                return;
+            }
+        }
+        throw new AccessDeniedException("Vous n'Ãªtes pas autorisÃ© Ã  modifier cette formation");
+    }
+    private void ensureCanReadFormation(Formation formation, UUID userId, String role) {
+        if ("ROLE_APPRENANT".equals(role)) {
+            if (hasActiveEnrollment(userId, formation.getId())) {
+                return;
+            }
+            throw new AccessDeniedException("Inscription active requise pour acceder a cette formation");
+        }
+
+        if ("ROLE_FORMATEUR".equals(role) && Objects.equals(formation.getFormateurId(), userId)) {
+            return;
+        }
+
+        if ("ROLE_ADMIN_ORG".equals(role)) {
+            UUID organisationId = SecurityUtils.getCurrentOrganisationId();
+            if (organisationId == null) {
+                organisationId = userRepository.findById(userId)
+                        .map(User::getOrganisationId)
+                        .orElse(null);
+            }
+            if (Objects.equals(formation.getOrganisationId(), organisationId)) {
+                return;
+            }
+        }
+
+        throw new AccessDeniedException("Vous n'etes pas autorise a consulter cette formation");
+    }
+
+    private boolean hasActiveEnrollment(UUID userId, UUID formationId) {
+        return inscriptionRepository.existsByApprenantIdAndFormationIdAndStatus(
+                userId, formationId, com.elearning.resourceserver.domain.enums.InscriptionStatus.EN_COURS)
+                || inscriptionRepository.existsByApprenantIdAndFormationIdAndStatus(
+                userId, formationId, com.elearning.resourceserver.domain.enums.InscriptionStatus.TERMINEE);
+    }
+
+    private void deleteSeanceInternal(Seance seance) {
+        deleteObjectBestEffort("elearning-media", seance.getVideoKey());
+        deleteObjectBestEffort("elearning-media", seance.getPdfKey());
+        pedagogicalResourceRepository.findBySeanceIdOrderByCreatedAtAsc(seance.getId()).forEach(resource -> {
+            deleteObjectBestEffort(resource.getBucketName(), resource.getObjectKey());
+            pedagogicalResourceRepository.delete(resource);
+        });
+        executeDelete("DELETE FROM forum_posts WHERE seance_id = :id", seance.getId());
+        executeDelete("DELETE FROM progress WHERE seance_id = :id", seance.getId());
+        executeDelete("DELETE FROM attendances WHERE seance_id = :id", seance.getId());
+        executeDelete("DELETE FROM presences WHERE seance_id = :id", seance.getId());
+        seanceRepository.delete(seance);
+    }
+
+    private void deleteCourseResources(UUID courseId) {
+        pedagogicalResourceRepository.findByCourseIdOrderByCreatedAtAsc(courseId).forEach(resource -> {
+            deleteObjectBestEffort(resource.getBucketName(), resource.getObjectKey());
+            pedagogicalResourceRepository.delete(resource);
+        });
+    }
+
+    private void deleteObjectBestEffort(String bucketName, String objectKey) {
+        if (bucketName == null || bucketName.isBlank() || objectKey == null || objectKey.isBlank()) {
+            return;
+        }
+        try {
+            minioService.deleteObject(bucketName, objectKey);
+        } catch (Exception e) {
+            log.warn("Could not delete MinIO object {}/{}: {}", bucketName, objectKey, e.getMessage());
+        }
+    }
+
+    private int executeDelete(String sql, UUID id) {
+        return entityManager.createNativeQuery(sql)
+                .setParameter("id", id)
+                .executeUpdate();
+    }
 }
+

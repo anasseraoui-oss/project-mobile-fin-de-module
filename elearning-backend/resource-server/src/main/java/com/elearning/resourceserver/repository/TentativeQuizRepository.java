@@ -18,6 +18,17 @@ public interface TentativeQuizRepository extends JpaRepository<TentativeQuiz, UU
 
     List<TentativeQuiz> findByApprenantIdAndQuizIdOrderByAttemptNumberDesc(UUID apprenantId, UUID quizId);
 
+    @Query("SELECT t FROM TentativeQuiz t " +
+           "JOIN FETCH t.quiz q " +
+           "JOIN FETCH q.course c " +
+           "JOIN FETCH c.formation f " +
+           "WHERE t.apprenantId = :apprenantId " +
+           "AND t.status <> 'EN_COURS' " +
+           "ORDER BY t.submittedAt DESC NULLS LAST, t.startedAt DESC")
+    List<TentativeQuiz> findCompletedHistoryByApprenantId(@Param("apprenantId") UUID apprenantId);
+
+    Optional<TentativeQuiz> findFirstByApprenantIdAndQuizIdOrderByAttemptNumberDesc(UUID apprenantId, UUID quizId);
+
     Optional<TentativeQuiz> findFirstByApprenantIdAndQuizIdAndStatus(
             UUID apprenantId, UUID quizId, TentativeQuizStatus status);
 

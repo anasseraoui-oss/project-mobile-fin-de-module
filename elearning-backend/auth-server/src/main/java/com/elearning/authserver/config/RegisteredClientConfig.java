@@ -3,6 +3,7 @@ package com.elearning.authserver.config;
 import java.time.Duration;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,18 +16,16 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat;
+import org.springframework.util.StringUtils;
 
 @Configuration
 public class RegisteredClientConfig {
 
     @Bean
-    public RegisteredClientRepository registeredClientRepository(PasswordEncoder passwordEncoder) {
-        RegisteredClient androidElearningApp = RegisteredClient.withId(UUID.randomUUID().toString())
+    public RegisteredClientRepository registeredClientRepository(PasswordEncoder passwordEncoder,
+            @Value("${security.oauth2.mobile-client-secret:}") String mobileClientSecret) {
+        RegisteredClient.Builder androidClientBuilder = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId("elearning-mobile-client")
-                // Pour le password grant, le client doit s'authentifier via client_secret dans le body
-                .clientSecret(passwordEncoder.encode("elearning-mobile-secret"))
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
                 .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
@@ -60,8 +59,16 @@ public class RegisteredClientConfig {
                         // Refresh Token généré opaque
                         .refreshTokenTimeToLive(Duration.ofDays(30))
                         .reuseRefreshTokens(false) // Rotation Opaque via Redis
-                        .build())
-                .build();
+                        .build());
+
+        if (StringUtils.hasText(mobileClientSecret)) {
+            androidClientBuilder
+                    .clientSecret(passwordEncoder.encode(mobileClientSecret))
+                    .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                    .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST);
+        }
+
+        RegisteredClient androidElearningApp = androidClientBuilder.build();
 
         // En production, utiliser JdbcRegisteredClientRepository (ou personnalisé pour interagir avec une DB/Redis)
         return new InMemoryRegisteredClientRepository(androidElearningApp);

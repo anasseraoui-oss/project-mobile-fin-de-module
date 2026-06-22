@@ -44,10 +44,10 @@ public class Seance {
     private SeanceStatus status = SeanceStatus.PLANIFIEE;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_id")
+    @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @Column(name = "course_id", insertable = false, updatable = false)
+    @Column(name = "course_id", insertable = false, updatable = false, nullable = false)
     private UUID coursId;
 
     @Column(name = "formateur_id")

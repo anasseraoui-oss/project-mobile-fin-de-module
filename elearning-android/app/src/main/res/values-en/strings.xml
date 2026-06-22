@@ -59,6 +59,16 @@
     <string name="label_question">Question</string>
     <string name="label_download_certificate">Download certificate</string>
 
+    <!-- QR -->
+    <string name="label_scan_qr">Scan QR code</string>
+    <string name="label_generate_qr">Generate QR code</string>
+    <string name="label_qr_valid_for">Valid for 5 minutes</string>
+
+    <!-- Notifications -->
+    <string name="label_notifications">Notifications</string>
+    <string name="label_mark_all_read">Mark all as read</string>
+    <string name="label_no_notifications">No notifications</string>
+
     <!-- Offline -->
     <string name="label_offline_mode">Offline mode</string>
     <string name="label_syncing">Syncing…</string>
